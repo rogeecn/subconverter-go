@@ -24,36 +24,29 @@ func TestService_Convert(t *testing.T) {
 	service := NewService(cfg, log)
 	service.RegisterGenerators()
 
-	t.Run("invalid target", func(t *testing.T) {
-		_ = &ConvertRequest{
-			Target: "invalid",
-			URLs:   []string{"https://example.com/subscription"},
-		}
+    t.Run("invalid target", func(t *testing.T) {
+        req := &ConvertRequest{
+            Target: "invalid",
+            URLs:   []string{"https://example.com/subscription"},
+        }
+        _, err := service.Convert(context.Background(), req)
+        assert.Error(t, err)
+    })
 
-		_, err := service.Convert(context.Background(), req)
-		assert.Error(t, err)
-	})
+    t.Run("empty URLs", func(t *testing.T) {
+        req := &ConvertRequest{
+            Target: "clash",
+            URLs:   []string{},
+        }
+        _, err := service.Convert(context.Background(), req)
+        assert.Error(t, err)
+    })
 
-	t.Run("empty URLs", func(t *testing.T) {
-		_ = &ConvertRequest{
-			Target: "clash",
-			URLs:   []string{},
-		}
-
-		_, err := service.Convert(context.Background(), req)
-		assert.Error(t, err)
-	})
-
-	t.Run("valid request", func(t *testing.T) {
-		_ = &ConvertRequest{
-			Target: "clash",
-			URLs:   []string{"https://example.com/subscription"},
-		}
-
-		// Mock HTTP client would be needed for real tests
-		// This is a placeholder test
-		assert.NotNil(t, service)
-	})
+    t.Run("valid request", func(t *testing.T) {
+        // Mock HTTP client would be needed to fully exercise network path.
+        // This is a placeholder to ensure service is initialized.
+        assert.NotNil(t, service)
+    })
 }
 
 func TestService_Validate(t *testing.T) {
@@ -73,11 +66,11 @@ func TestService_Validate(t *testing.T) {
 		assert.Equal(t, "shadowsocks", format)
 	})
 
-	t.Run("vmess format detection", func(t *testing.T) {
-		content := "vmess://eyJhZGQiOiIxMjcuMC4wLjEiLCJwb3J0IjoiODAiL..."
-		format := service.detectFormat(content)
-		assert.Equal(t, "vmess", format)
-	})
+    t.Run("vmess format detection", func(t *testing.T) {
+        content := "vmess://dGVzdA==" // minimal vmess marker
+        format := service.detectFormat(content)
+        assert.Equal(t, "vmess", format)
+    })
 }
 
 func TestService_SupportedFormats(t *testing.T) {

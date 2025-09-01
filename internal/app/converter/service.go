@@ -156,29 +156,30 @@ func (s *Service) GetInfo(ctx context.Context) (*InfoResponse, error) {
 }
 
 func (s *Service) detectFormat(content string) string {
-	// Simple format detection based on content patterns
-	if strings.Contains(content, "ss://") || strings.Contains(content, "ssr://") {
-		return "shadowsocks"
-	}
-	if strings.Contains(content, "vmess://") {
-		return "vmess"
-	}
-	if strings.Contains(content, "trojan://") {
-		return "trojan"
-	}
-	if strings.Contains(content, "vless://") {
-		return "vless"
-	}
-	if strings.Contains(content, "hysteria://") {
-		return "hysteria"
-	}
-	if strings.Contains(content, "hysteria2://") {
-		return "hysteria2"
-	}
-	if strings.Contains(content, "snell://") {
-		return "snell"
-	}
-	return "unknown"
+    // Simple format detection based on content patterns
+    // Check more specific schemes first to avoid substring conflicts (e.g., vmess contains 'ss')
+    if strings.Contains(content, "vmess://") {
+        return "vmess"
+    }
+    if strings.Contains(content, "trojan://") {
+        return "trojan"
+    }
+    if strings.Contains(content, "vless://") {
+        return "vless"
+    }
+    if strings.Contains(content, "hysteria://") {
+        return "hysteria"
+    }
+    if strings.Contains(content, "hysteria2://") {
+        return "hysteria2"
+    }
+    if strings.Contains(content, "snell://") {
+        return "snell"
+    }
+    if strings.Contains(content, "ss://") || strings.Contains(content, "ssr://") {
+        return "shadowsocks"
+    }
+    return "unknown"
 }
 
 // Health checks the service health

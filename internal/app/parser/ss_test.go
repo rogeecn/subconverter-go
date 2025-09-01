@@ -22,29 +22,29 @@ func TestSSParser_Parse(t *testing.T) {
 		{
 			name:  "valid legacy SS",
 			input: "ss://YWVzLTI1Ni1nY206dGVzdA==@127.0.0.1:8388#Test",
-			expected: &proxy.Proxy{
-				Type:     proxy.Shadowsocks,
-				Server:   "127.0.0.1",
-				Port:     8388,
-				Password: "test",
-				Method:   "aes-256-gcm",
-				Name:     "Test",
-			},
+            expected: &proxy.Proxy{
+                Type:     proxy.TypeShadowsocks,
+                Server:   "127.0.0.1",
+                Port:     8388,
+                Password: "test",
+                Method:   "aes-256-gcm",
+                Name:     "Test",
+            },
 			wantErr: false,
 		},
 		{
 			name:  "valid SIP002 SS",
 			input: "ss://YWVzLTI1Ni1nY206dGVzdA==@127.0.0.1:8388/?plugin=obfs-local%3Bobfs%3Dhttp#Test",
-			expected: &proxy.Proxy{
-				Type:     proxy.Shadowsocks,
-				Server:   "127.0.0.1",
-				Port:     8388,
-				Password: "test",
-				Method:   "aes-256-gcm",
-				Plugin:   "obfs-local",
-				PluginOpts: "obfs=http",
-				Name:     "Test",
-			},
+            expected: &proxy.Proxy{
+                Type:     proxy.TypeShadowsocks,
+                Server:   "127.0.0.1",
+                Port:     8388,
+                Password: "test",
+                Method:   "aes-256-gcm",
+                Plugin:   "obfs-local",
+                PluginOpts: "obfs=http",
+                Name:     "Test",
+            },
 			wantErr: false,
 		},
 		{
@@ -84,11 +84,11 @@ func TestSSParser_Parse(t *testing.T) {
 }
 
 func TestSSParser_Supports(t *testing.T) {
-	parser := NewSSParser()
-	
-	assert.True(t, parser.Supports("ss://test"))
-	assert.False(t, parser.Supports("vmess://test"))
-	assert.False(t, parser.Supports("invalid://test"))
+    parser := NewSSParser()
+    
+    assert.True(t, parser.Support("ss://test"))
+    assert.False(t, parser.Support("vmess://test"))
+    assert.False(t, parser.Support("invalid://test"))
 }
 
 func BenchmarkSSParser_Parse(b *testing.B) {

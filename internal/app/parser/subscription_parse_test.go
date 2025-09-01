@@ -4,6 +4,7 @@ import (
     "context"
     "encoding/base64"
     "testing"
+    pkgproxy "github.com/subconverter/subconverter-go/internal/domain/proxy"
 )
 
 func TestManager_Parse_Base64Subscription(t *testing.T) {
@@ -27,7 +28,7 @@ func TestVLESSParser_RealityAndWS(t *testing.T) {
     list, err := p.Parse(ctx, uri)
     if err != nil { t.Fatalf("unexpected error: %v", err) }
     v := list[0]
-    if v.Security != "reality" || v.TLS == TLSNone || v.RealityPublicKey != "pubkey" || v.SNI != "example.com" {
+    if v.Security != "reality" || v.TLS == pkgproxy.TLSNone || v.RealityPublicKey != "pubkey" || v.SNI != "example.com" {
         t.Fatalf("vless reality fields not parsed correctly: %+v", v)
     }
 
@@ -35,8 +36,7 @@ func TestVLESSParser_RealityAndWS(t *testing.T) {
     list2, err := p.Parse(ctx, uri2)
     if err != nil { t.Fatalf("unexpected error: %v", err) }
     v2 := list2[0]
-    if v2.Path == "" || v2.Host == "" || v2.TLS == TLSNone {
+    if v2.Path == "" || v2.Host == "" || v2.TLS == pkgproxy.TLSNone {
         t.Fatalf("vless ws/tls fields not parsed correctly: %+v", v2)
     }
 }
-
