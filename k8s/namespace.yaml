@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: subconverter
+  labels:
+    name: subconverter
+    app.kubernetes.io/name: subconverter
+    app.kubernetes.io/version: "1.0.0"

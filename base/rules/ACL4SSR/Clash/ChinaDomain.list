@@ -1,0 +1,20 @@
+# 中国域名
+DOMAIN-SUFFIX,cn
+DOMAIN-SUFFIX,com.cn
+DOMAIN-SUFFIX,edu.cn
+DOMAIN-SUFFIX,gov.cn
+DOMAIN-SUFFIX,mil.cn
+DOMAIN-SUFFIX,net.cn
+DOMAIN-SUFFIX,org.cn
+
+# 中国主要网站
+DOMAIN-SUFFIX,qq.com
+DOMAIN-SUFFIX,wechat.com
+DOMAIN-SUFFIX,baidu.com
+DOMAIN-SUFFIX,taobao.com
+DOMAIN-SUFFIX,tmall.com
+DOMAIN-SUFFIX,jd.com
+DOMAIN-SUFFIX,alipay.com
+DOMAIN-SUFFIX,weibo.com
+DOMAIN-SUFFIX,douban.com
+DOMAIN-SUFFIX,zhihu.com

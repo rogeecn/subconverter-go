@@ -1,0 +1,167 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: subconverter
+  namespace: subconverter
+  labels:
+    app: subconverter
+    app.kubernetes.io/name: subconverter
+    app.kubernetes.io/version: "1.0.0"
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: subconverter
+  template:
+    metadata:
+      labels:
+        app: subconverter
+    spec:
+      containers:
+      - name: subconverter
+        image: subconverter-go:latest
+        ports:
+        - containerPort: 8080
+          name: http
+        env:
+        - name: SERVER_PORT
+          value: "8080"
+        - name: SERVER_HOST
+          value: "0.0.0.0"
+        - name: LOG_LEVEL
+          value: "info"
+        - name: REDIS_ENABLED
+          value: "true"
+        - name: REDIS_HOST
+          value: "redis-service"
+        - name: REDIS_PORT
+          value: "6379"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /api/v1/health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /api/v1/health
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        volumeMounts:
+        - name: config
+          mountPath: /root/configs
+          readOnly: true
+        - name: templates
+          mountPath: /root/templates
+          readOnly: true
+        - name: rules
+          mountPath: /root/rules
+          readOnly: true
+      volumes:
+      - name: config
+        configMap:
+          name: subconverter-config
+      - name: templates
+        configMap:
+          name: subconverter-templates
+      - name: rules
+        configMap:
+          name: subconverter-rules
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: subconverter-worker
+  namespace: subconverter
+  labels:
+    app: subconverter-worker
+    app.kubernetes.io/name: subconverter-worker
+    app.kubernetes.io/version: "1.0.0"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: subconverter-worker
+  template:
+    metadata:
+      labels:
+        app: subconverter-worker
+    spec:
+      containers:
+      - name: subconverter-worker
+        image: subconverter-go:latest
+        command: ["./subworker", "start", "--workers", "4"]
+        env:
+        - name: REDIS_ENABLED
+          value: "true"
+        - name: REDIS_HOST
+          value: "redis-service"
+        - name: REDIS_PORT
+          value: "6379"
+        - name: QUEUE_TYPE
+          value: "redis"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "200m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        livenessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - "ps aux | grep subworker | grep -v grep"
+          initialDelaySeconds: 30
+          periodSeconds: 30
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  namespace: subconverter
+  labels:
+    app: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:7-alpine
+        ports:
+        - containerPort: 6379
+          name: redis
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        volumeMounts:
+        - name: redis-data
+          mountPath: /data
+      volumes:
+      - name: redis-data
+        persistentVolumeClaim:
+          claimName: redis-pvc

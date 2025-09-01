@@ -1,0 +1,493 @@
+openapi: 3.0.0
+info:
+  title: SubConverter Go API
+  description: 高性能代理订阅转换服务API
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@subconverter.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8080
+    description: 本地开发服务器
+  - url: https://api.subconverter.com
+    description: 生产服务器
+
+paths:
+  /api/v1/convert:
+    post:
+      summary: 转换订阅URL
+      description: 将代理订阅URL转换为指定格式的配置文件
+      tags:
+        - Conversion
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConvertRequest'
+      responses:
+        '200':
+          description: 转换成功
+          content:
+            application/x-yaml:
+              schema:
+                type: string
+                description: 生成的配置文件内容
+              examples:
+                clash:
+                  summary: Clash配置示例
+                  value: |
+                    port: 7890
+                    socks-port: 7891
+                    allow-lan: true
+                    mode: Rule
+                    log-level: info
+                    proxies:
+                      - name: "测试节点"
+                        type: ss
+                        server: 127.0.0.1
+                        port: 8388
+                        cipher: aes-256-gcm
+                        password: test123
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/v1/convert/batch:
+    post:
+      summary: 批量转换订阅URL
+      description: 同时处理多个订阅URL的转换请求
+      tags:
+        - Conversion
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchConvertRequest'
+      responses:
+        '200':
+          description: 批量转换成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchConvertResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/v1/validate:
+    post:
+      summary: 验证订阅URL
+      description: 验证订阅URL的有效性和格式
+      tags:
+        - Validation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValidateRequest'
+      responses:
+        '200':
+          description: 验证结果
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidateResponse'
+
+  /api/v1/info:
+    get:
+      summary: 获取服务信息
+      description: 返回服务版本和支持的格式信息
+      tags:
+        - Information
+      responses:
+        '200':
+          description: 服务信息
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InfoResponse'
+
+  /api/v1/health:
+    get:
+      summary: 健康检查
+      description: 检查服务各组件的健康状态
+      tags:
+        - Health
+      responses:
+        '200':
+          description: 健康状态
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /api/v1/formats:
+    get:
+      summary: 获取支持的格式
+      description: 返回所有支持的转换格式
+      tags:
+        - Information
+      responses:
+        '200':
+          description: 支持的格式列表
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormatsResponse'
+
+  /:
+    get:
+      summary: 根路径
+      description: 返回服务基本信息
+      tags:
+        - Information
+      responses:
+        '200':
+          description: 服务基本信息
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RootResponse'
+
+  /docs:
+    get:
+      summary: 获取API文档
+      description: 返回API使用文档
+      tags:
+        - Documentation
+      responses:
+        '200':
+          description: API文档
+          content:
+            text/plain:
+              schema:
+                type: string
+
+components:
+  schemas:
+    ConvertRequest:
+      type: object
+      required:
+        - target
+        - urls
+      properties:
+        target:
+          type: string
+          description: 目标格式
+          enum: [clash, surge, quantumult, loon, v2ray, surfboard]
+          example: clash
+        urls:
+          type: array
+          items:
+            type: string
+            format: uri
+          description: 订阅URL列表
+          example: ["https://example.com/subscription"]
+        config:
+          type: string
+          format: uri
+          description: 自定义配置文件URL
+          example: https://example.com/config.yaml
+        options:
+          $ref: '#/components/schemas/ConvertOptions'
+
+    ConvertOptions:
+      type: object
+      properties:
+        include_remarks:
+          type: array
+          items:
+            type: string
+          description: 包含的节点名称关键词
+          example: ["香港", "日本"]
+        exclude_remarks:
+          type: array
+          items:
+            type: string
+          description: 排除的节点名称关键词
+          example: ["测试", "过期"]
+        sort:
+          type: boolean
+          description: 是否按名称排序节点
+          default: true
+          example: true
+        udp:
+          type: boolean
+          description: 是否启用UDP支持
+          default: true
+          example: true
+        rename_rules:
+          type: array
+          items:
+            $ref: '#/components/schemas/RenameRule'
+          description: 节点重命名规则
+        emoji_rules:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmojiRule'
+          description: 节点emoji规则
+        rules:
+          type: array
+          items:
+            type: string
+          description: 自定义规则
+          example: ["DOMAIN-SUFFIX,google.com,🚀 节点选择"]
+        proxy_groups:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProxyGroup'
+          description: 代理组配置
+
+    RenameRule:
+      type: object
+      properties:
+        match:
+          type: string
+          description: 匹配关键词
+          example: "香港"
+        replace:
+          type: string
+          description: 替换内容
+          example: "HK"
+
+    EmojiRule:
+      type: object
+      properties:
+        match:
+          type: string
+          description: 匹配关键词
+          example: "香港"
+        emoji:
+          type: string
+          description: Emoji字符
+          example: "🇭🇰"
+
+    ProxyGroup:
+      type: object
+      required:
+        - name
+        - type
+      properties:
+        name:
+          type: string
+          description: 代理组名称
+          example: "🚀 节点选择"
+        type:
+          type: string
+          description: 代理组类型
+          enum: [select, url-test, fallback, load-balance]
+          example: select
+        proxies:
+          type: array
+          items:
+            type: string
+          description: 包含的代理或代理组名称
+          example: ["DIRECT", "🚀 节点选择"]
+        url:
+          type: string
+          description: 测试URL（url-test/fallback/load-balance需要）
+          example: "http://www.gstatic.com/generate_204"
+        interval:
+          type: integer
+          description: 测试间隔（秒）
+          example: 300
+
+    BatchConvertRequest:
+      type: object
+      required:
+        - requests
+      properties:
+        requests:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConvertRequest'
+          description: 转换请求列表
+
+    ConvertResponse:
+      type: object
+      properties:
+        config:
+          type: string
+          description: 生成的配置文件内容
+        format:
+          type: string
+          description: 目标格式
+        proxies:
+          type: array
+          items:
+            type: object
+          description: 代理节点列表
+        generated:
+          type: string
+          format: date-time
+          description: 生成时间
+
+    BatchConvertResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConvertResponse'
+          description: 转换结果列表
+        errors:
+          type: array
+          items:
+            type: string
+          description: 错误信息列表
+
+    ValidateRequest:
+      type: object
+      required:
+        - url
+      properties:
+        url:
+          type: string
+          format: uri
+          description: 订阅URL
+          example: https://example.com/subscription
+
+    ValidateResponse:
+      type: object
+      properties:
+        valid:
+          type: boolean
+          description: 是否有效
+        format:
+          type: string
+          description: 订阅格式
+        proxies:
+          type: integer
+          description: 代理节点数量
+        error:
+          type: string
+          description: 错误信息（如果有）
+
+    InfoResponse:
+      type: object
+      properties:
+        version:
+          type: string
+          description: 服务版本
+          example: 1.0.0
+        supported_types:
+          type: array
+          items:
+            type: string
+          description: 支持的格式列表
+          example: [clash, surge, quantumult]
+        features:
+          type: array
+          items:
+            type: string
+          description: 功能特性列表
+          example: ["High-performance conversion", "Multiple protocol support"]
+
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: 总体状态
+          example: ok
+        timestamp:
+          type: string
+          format: date-time
+          description: 检查时间
+        services:
+          type: object
+          additionalProperties:
+            type: string
+          description: 各服务状态
+          example: {"cache": "healthy", "service": "healthy"}
+
+    FormatsResponse:
+      type: object
+      properties:
+        formats:
+          type: array
+          items:
+            type: string
+          description: 支持的格式列表
+
+    RootResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: SubConverter Go API
+        version:
+          type: string
+          example: 1.0.0
+        docs:
+          type: string
+          example: /docs
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: 错误信息
+        code:
+          type: string
+          description: 错误代码
+        details:
+          type: object
+          description: 详细错误信息
+
+  responses:
+    BadRequest:
+      description: 请求参数错误
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "无效的请求参数"
+            code: "INVALID_REQUEST"
+
+    RateLimited:
+      description: 请求频率过高
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "请求频率过高，请稍后再试"
+            code: "RATE_LIMITED"
+
+    InternalError:
+      description: 服务器内部错误
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "服务器内部错误"
+            code: "INTERNAL_ERROR"
+
+tags:
+  - name: Conversion
+    description: 订阅转换相关接口
+  - name: Validation
+    description: 订阅验证相关接口
+  - name: Health
+    description: 健康检查接口
+  - name: Information
+    description: 服务信息接口
+  - name: Documentation
+    description: 文档接口
