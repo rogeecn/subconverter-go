@@ -6,13 +6,14 @@ import (
 )
 
 type Config struct {
-	Server ServerConfig `yaml:"server"`
-	Log    LogConfig    `yaml:"log"`
-	Redis  RedisConfig  `yaml:"redis"`
-	Cache  CacheConfig  `yaml:"cache"`
-	Security SecurityConfig `yaml:"security"`
-	Parser ParserConfig `yaml:"parser"`
-	Generator GeneratorConfig `yaml:"generator"`
+    Server ServerConfig `yaml:"server"`
+    Log    LogConfig    `yaml:"log"`
+    Redis  RedisConfig  `yaml:"redis"`
+    Cache  CacheConfig  `yaml:"cache"`
+    Security SecurityConfig `yaml:"security"`
+    Parser ParserConfig `yaml:"parser"`
+    Generator GeneratorConfig `yaml:"generator"`
+    Subscription SubscriptionConfig `yaml:"subscription"`
 }
 
 type ServerConfig struct {
@@ -62,8 +63,13 @@ type ParserConfig struct {
 }
 
 type GeneratorConfig struct {
-	TemplatesDir string `yaml:"templates_dir"`
-	RulesDir     string `yaml:"rules_dir"`
+    TemplatesDir string `yaml:"templates_dir"`
+    RulesDir     string `yaml:"rules_dir"`
+}
+
+type SubscriptionConfig struct {
+    // ExtraLinks are user-defined protocol links to merge into results
+    ExtraLinks []string `yaml:"extra_links"`
 }
 
 // Load loads configuration from file and environment
@@ -93,8 +99,9 @@ func Load() *Config {
 	viper.SetDefault("security.cors.origins", []string{"*"})
 	viper.SetDefault("parser.timeout", 30)
 	viper.SetDefault("parser.max_size", 10485760)
-	viper.SetDefault("generator.templates_dir", "./base/base")
-	viper.SetDefault("generator.rules_dir", "./base/rules")
+    viper.SetDefault("generator.templates_dir", "./base/base")
+    viper.SetDefault("generator.rules_dir", "./base/rules")
+    viper.SetDefault("subscription.extra_links", []string{})
 
 	viper.AutomaticEnv()
 

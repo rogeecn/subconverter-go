@@ -63,8 +63,17 @@ func (s *Service) Convert(ctx context.Context, req *ConvertRequest) (*ConvertRes
 		return nil, err
 	}
 
-	// Check cache
-	cacheKey := s.generateCacheKey(req)
+	// Merge request URLs with configured extra links and check cache
+	mergedURLs := make([]string, 0, len(req.URLs)+len(s.config.Subscription.ExtraLinks))
+	mergedURLs = append(mergedURLs, req.URLs...)
+	if len(s.config.Subscription.ExtraLinks) > 0 {
+		mergedURLs = append(mergedURLs, s.config.Subscription.ExtraLinks...)
+	}
+
+	mergedReq := *req
+	mergedReq.URLs = mergedURLs
+
+	cacheKey := s.generateCacheKey(&mergedReq)
 	if cached, err := s.cache.Get(ctx, cacheKey); err == nil {
 		var resp ConvertResponse
 		if err := json.Unmarshal(cached, &resp); err == nil {
@@ -73,7 +82,10 @@ func (s *Service) Convert(ctx context.Context, req *ConvertRequest) (*ConvertRes
 	}
 
 	// Fetch subscriptions
-	allProxies, err := s.fetchSubscriptions(ctx, req.URLs)
+	if len(mergedURLs) == 0 {
+		return nil, errors.BadRequest("INVALID_URLS", "no subscription URLs or extra links provided")
+	}
+	allProxies, err := s.fetchSubscriptions(ctx, mergedURLs)
 	if err != nil {
 		return nil, err
 	}
@@ -198,20 +210,16 @@ func (s *Service) Health(ctx context.Context) error {
 }
 
 func (s *Service) validateRequest(req *ConvertRequest) error {
-	if req.Target == "" {
-		return errors.BadRequest("INVALID_TARGET", "target format is required")
-	}
+    if req.Target == "" {
+        return errors.BadRequest("INVALID_TARGET", "target format is required")
+    }
 
-	if len(req.URLs) == 0 {
-		return errors.BadRequest("INVALID_URLS", "at least one subscription URL is required")
-	}
+    // Check if target format is supported
+    if _, exists := s.generatorManager.Get(req.Target); !exists {
+        return errors.BadRequest("UNSUPPORTED_TARGET", fmt.Sprintf("target format '%s' is not supported", req.Target))
+    }
 
-	// Check if target format is supported
-	if _, exists := s.generatorManager.Get(req.Target); !exists {
-		return errors.BadRequest("UNSUPPORTED_TARGET", fmt.Sprintf("target format '%s' is not supported", req.Target))
-	}
-
-	return nil
+    return nil
 }
 
 func (s *Service) fetchSubscriptions(ctx context.Context, urls []string) ([]*proxy.Proxy, error) {
