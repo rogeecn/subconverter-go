@@ -113,6 +113,20 @@ subscription:
 ```
 http://localhost:8080/api/v1/convert?target=clash
 ```
+
+### 快速验证（仅用 extra_links）
+
+1. 在 `configs/config.yaml` 配置 `subscription.extra_links`（可混合 ss://、trojan://、https://）。
+2. 启动服务：`./subconverter --config configs/config.yaml`（或 Docker 方式）。
+3. 访问（不传 url，默认 target=clash 也可显式指定）：
+   - `http://localhost:8080/api/v1/convert?target=clash`
+   - 或别名：`http://localhost:8080/sub?target=clash`
+4. 返回应为 YAML。命令行验证：
+   - `curl -I "http://localhost:8080/api/v1/convert?target=clash" | grep Content-Type`
+   - `curl -s "http://localhost:8080/api/v1/convert?target=clash" | head -n 20`
+5. 合并使用（将请求 url 与 extra_links 一并合并）：
+   - `http://localhost:8080/api/v1/convert?target=clash&url=https://example.com/sub`
+
 ### 健康检查
 
 ```bash
