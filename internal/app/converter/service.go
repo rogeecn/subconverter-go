@@ -63,6 +63,19 @@ func (s *Service) Convert(ctx context.Context, req *ConvertRequest) (*ConvertRes
 		return nil, err
 	}
 
+	// Log request basics
+	s.logger.WithFields(map[string]interface{}{
+		"target":          req.Target,
+		"req_urls":        len(req.URLs),
+		"include_remarks": len(req.Options.IncludeRemarks),
+		"exclude_remarks": len(req.Options.ExcludeRemarks),
+		"rename_rules":    len(req.Options.RenameRules),
+		"emoji_rules":     len(req.Options.EmojiRules),
+		"sort":            req.Options.Sort,
+		"udp":             req.Options.UDP,
+		"base_template":   req.Options.BaseTemplate,
+	}).Info("Conversion request received")
+
 	// Merge request URLs with configured extra links and check cache
 	mergedURLs := make([]string, 0, len(req.URLs)+len(s.config.Subscription.ExtraLinks))
 	mergedURLs = append(mergedURLs, req.URLs...)
@@ -73,27 +86,45 @@ func (s *Service) Convert(ctx context.Context, req *ConvertRequest) (*ConvertRes
 	mergedReq := *req
 	mergedReq.URLs = mergedURLs
 
+	s.logger.WithFields(map[string]interface{}{"req_urls": len(req.URLs), "extra_links": len(s.config.Subscription.ExtraLinks), "merged_urls": len(mergedURLs)}).Debug("URLs merged")
+
 	cacheKey := s.generateCacheKey(&mergedReq)
+	s.logger.WithField("cache_key", cacheKey).Debug("Cache lookup start")
 	if cached, err := s.cache.Get(ctx, cacheKey); err == nil {
 		var resp ConvertResponse
 		if err := json.Unmarshal(cached, &resp); err == nil {
+			s.logger.WithFields(map[string]interface{}{
+				"cache_key": cacheKey,
+				"proxies":   len(resp.Proxies),
+				"bytes":     len(resp.Config),
+			}).Info("Cache hit")
 			return &resp, nil
 		}
 	}
+	s.logger.WithField("cache_key", cacheKey).Debug("Cache miss")
 
 	// Fetch subscriptions
 	if len(mergedURLs) == 0 {
 		return nil, errors.BadRequest("INVALID_URLS", "no subscription URLs or extra links provided")
 	}
+	s.logger.WithField("count", len(mergedURLs)).Info("Fetching subscriptions")
 	allProxies, err := s.fetchSubscriptions(ctx, mergedURLs)
 	if err != nil {
 		return nil, err
 	}
+	s.logger.WithField("proxies", len(allProxies)).Info("Fetched and parsed subscriptions")
 
 	// Apply filters
+	before := len(allProxies)
 	filteredProxies := s.applyFilters(allProxies, req.Options)
+	s.logger.WithFields(map[string]interface{}{
+		"before": before,
+		"after":  len(filteredProxies),
+	}).Info("Filters applied")
 
 	// Generate configuration
+	genStart := time.Now()
+	s.logger.WithFields(map[string]interface{}{"target": req.Target, "proxies": len(filteredProxies)}).Info("Generating configuration")
 	config, err := s.generatorManager.Generate(ctx, req.Target, filteredProxies, nil, generator.GenerateOptions{
 		ProxyGroups:   s.buildProxyGroups(req.Options),
 		Rules:         req.Options.Rules,
@@ -106,6 +137,7 @@ func (s *Service) Convert(ctx context.Context, req *ConvertRequest) (*ConvertRes
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to generate configuration")
 	}
+	s.logger.WithFields(map[string]interface{}{"bytes": len(config), "duration": time.Since(genStart)}).Info("Configuration generated")
 
 	// Build response
 	resp := &ConvertResponse{
@@ -118,6 +150,7 @@ func (s *Service) Convert(ctx context.Context, req *ConvertRequest) (*ConvertRes
 	// Cache the response
 	if cacheData, err := json.Marshal(resp); err == nil {
 		s.cache.Set(ctx, cacheKey, cacheData, time.Duration(s.config.Cache.TTL)*time.Second)
+		s.logger.WithFields(map[string]interface{}{"cache_key": cacheKey, "ttl_sec": s.config.Cache.TTL}).Debug("Cached conversion result")
 	}
 
 	return resp, nil
@@ -238,15 +271,18 @@ func (s *Service) fetchSubscriptions(ctx context.Context, urls []string) ([]*pro
 
 			var text string
 			if strings.HasPrefix(u, "http://") || strings.HasPrefix(u, "https://") {
+				s.logger.WithField("url", u).Debug("Fetching URL")
 				content, err := s.httpClient.Get(ctx, u)
 				if err != nil {
 					results <- result{err: errors.Wrap(err, fmt.Sprintf("failed to fetch URL: %s", u))}
 					return
 				}
 				text = string(content)
+				s.logger.WithFields(map[string]interface{}{"url": u, "bytes": len(content)}).Debug("Fetched URL")
 			} else {
 				// treat as direct node link content (e.g., ss://, trojan://)
 				text = u
+				s.logger.WithField("scheme", strings.SplitN(u, "://", 2)[0]).Debug("Parsing direct node link")
 			}
 
 			proxies, err := s.parserManager.Parse(ctx, text)
@@ -255,6 +291,7 @@ func (s *Service) fetchSubscriptions(ctx context.Context, urls []string) ([]*pro
 				return
 			}
 
+			s.logger.WithFields(map[string]interface{}{"source": u, "proxies": len(proxies)}).Debug("Parsed proxies from source")
 			results <- result{proxies: proxies}
 		}(url)
 	}
