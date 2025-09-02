@@ -254,3 +254,20 @@ MIT License - 详见 [LICENSE](LICENSE) 文件
 ## 致谢
 
 感谢原始SubConverter项目的贡献者和社区支持。
+
+
+### 常见错误与排查（客户端侧）
+
+- TLS/SNI 不一致：证书域名校验失败。确保 `sni/servername` 与证书一致；WS 的 `Host` 头与反代配置匹配。
+- WS 路径/编码：`path` 需以 `/` 开头；URI 中路径应做 URL 编码（`/ws` → `%2Fws`）。
+- Base64 兼容：订阅常见移除 `=` 或使用 URL-safe Base64；解码前可补齐 `=` 或替换 `-_` 为 `+/`。
+- Reality/XTLS 支持：需 Clash.Meta 或支持 Reality 的客户端；`flow/fp/pbk/sid/spx` 与服务端一致。
+- 证书校验：测试或自签证书可开启 `skip-cert-verify/insecure`，生产建议正确配置完整信任链。
+- Hy2 ALPN：与服务端一致（如 `h3`）；不一致会导致握手失败。
+- DNS/解析：域名污染或解析异常时，客户端配置可信 DNS/Bootstrap（DoH/DoQ 亦可）。
+- 时间同步：系统时间偏差会导致 TLS 失败；建议开启 NTP。
+
+快速自检命令：
+- `openssl s_client -connect host:443 -servername sni` 观察证书与握手。
+- `curl -vk --resolve example.com:443:ip https://example.com` 验证 SNI/证书与反代。
+
