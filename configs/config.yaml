@@ -36,3 +36,13 @@ parser:
 generator:
   templates_dir: "./templates"
   rules_dir: "./rules"
+
+# 用户自定义额外节点/订阅链接，会与请求中的 url/urls 一并合并并转换
+# 支持混合：独立节点（ss://、trojan:// 等）与订阅链接（https://）
+subscription:
+  extra_links:
+    # 独立节点示例（可按需替换或移除）
+    # - ss://YWVzLTI1Ni1nY206dGVzdEAxMjcuMC4wLjE6ODM4OA==#LOCAL
+    # - trojan://password@example.com:443?security=tls#TROJAN
+    # 额外订阅链接示例
+    # - https://upstream.example.com/sub
