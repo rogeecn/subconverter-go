@@ -2,11 +2,11 @@ package queue
 
 import (
 	"context"
-		"fmt"
+	"fmt"
 	"time"
 
-		"github.com/rogeecn/subconverter-go/internal/app/converter"
-		"github.com/rogeecn/subconverter-go/internal/pkg/logger"
+	"github.com/rogeecn/subconverter-go/internal/app/converter"
+	"github.com/rogeecn/subconverter-go/internal/pkg/logger"
 )
 
 // Job represents a conversion job

@@ -2,7 +2,6 @@ package errors
 
 import (
 	"net/http"
-
 )
 
 type Error struct {
@@ -16,7 +15,7 @@ func (e *Error) Error() string {
 	return e.Message
 }
 
-func New(code string, message string) *Error {
+func New(code, message string) *Error {
 	return &Error{
 		Code:    code,
 		Message: message,
@@ -24,7 +23,7 @@ func New(code string, message string) *Error {
 	}
 }
 
-func NewWithStatus(code string, message string, status int) *Error {
+func NewWithStatus(code, message string, status int) *Error {
 	return &Error{
 		Code:    code,
 		Message: message,
@@ -43,27 +42,27 @@ func Wrap(err error, message string) *Error {
 	}
 }
 
-func BadRequest(code string, message string) *Error {
+func BadRequest(code, message string) *Error {
 	return NewWithStatus(code, message, http.StatusBadRequest)
 }
 
-func NotFound(code string, message string) *Error {
+func NotFound(code, message string) *Error {
 	return NewWithStatus(code, message, http.StatusNotFound)
 }
 
-func Unauthorized(code string, message string) *Error {
+func Unauthorized(code, message string) *Error {
 	return NewWithStatus(code, message, http.StatusUnauthorized)
 }
 
-func Forbidden(code string, message string) *Error {
+func Forbidden(code, message string) *Error {
 	return NewWithStatus(code, message, http.StatusForbidden)
 }
 
-func InternalError(code string, message string) *Error {
+func InternalError(code, message string) *Error {
 	return NewWithStatus(code, message, http.StatusInternalServerError)
 }
 
-func ValidationError(field string, message string) *Error {
+func ValidationError(field, message string) *Error {
 	return &Error{
 		Code:    "VALIDATION_ERROR",
 		Message: message,

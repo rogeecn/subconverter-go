@@ -1,18 +1,17 @@
 package config
 
 import (
-
 	"github.com/spf13/viper"
 )
 
 type Config struct {
-    Server ServerConfig `yaml:"server"`
-    Log    LogConfig    `yaml:"log"`
-    Cache  CacheConfig  `yaml:"cache"`
-    Security SecurityConfig `yaml:"security"`
-    Parser ParserConfig `yaml:"parser"`
-    Generator GeneratorConfig `yaml:"generator"`
-    Subscription SubscriptionConfig `yaml:"subscription"`
+	Server       ServerConfig       `yaml:"server"`
+	Log          LogConfig          `yaml:"log"`
+	Cache        CacheConfig        `yaml:"cache"`
+	Security     SecurityConfig     `yaml:"security"`
+	Parser       ParserConfig       `yaml:"parser"`
+	Generator    GeneratorConfig    `yaml:"generator"`
+	Subscription SubscriptionConfig `yaml:"subscription"`
 }
 
 type ServerConfig struct {
@@ -38,9 +37,9 @@ type SecurityConfig struct {
 }
 
 type RateLimitConfig struct {
-	Enabled   bool   `yaml:"enabled"`
-	Requests  int    `yaml:"requests"`
-	Window    string `yaml:"window"`
+	Enabled  bool   `yaml:"enabled"`
+	Requests int    `yaml:"requests"`
+	Window   string `yaml:"window"`
 }
 
 type CORSConfig struct {
@@ -54,13 +53,13 @@ type ParserConfig struct {
 }
 
 type GeneratorConfig struct {
-    TemplatesDir string `yaml:"templates_dir"`
-    RulesDir     string `yaml:"rules_dir"`
+	TemplatesDir string `yaml:"templates_dir"`
+	RulesDir     string `yaml:"rules_dir"`
 }
 
 type SubscriptionConfig struct {
-    // ExtraLinks are user-defined protocol links to merge into results
-    ExtraLinks []string `yaml:"extra_links"`
+	// ExtraLinks are user-defined protocol links to merge into results
+	ExtraLinks []string `yaml:"extra_links"`
 }
 
 // Load loads configuration from file and environment
@@ -77,7 +76,7 @@ func Load() *Config {
 	viper.SetDefault("log.level", "info")
 	viper.SetDefault("log.format", "json")
 	viper.SetDefault("log.output", "stdout")
-					viper.SetDefault("cache.ttl", 300)
+	viper.SetDefault("cache.ttl", 300)
 	viper.SetDefault("cache.max_size", 1000)
 	viper.SetDefault("security.rate_limit.enabled", true)
 	viper.SetDefault("security.rate_limit.requests", 100)
@@ -86,9 +85,9 @@ func Load() *Config {
 	viper.SetDefault("security.cors.origins", []string{"*"})
 	viper.SetDefault("parser.timeout", 30)
 	viper.SetDefault("parser.max_size", 10485760)
-    viper.SetDefault("generator.templates_dir", "./base/base")
-    viper.SetDefault("generator.rules_dir", "./base/rules")
-    viper.SetDefault("subscription.extra_links", []string{})
+	viper.SetDefault("generator.templates_dir", "./base/base")
+	viper.SetDefault("generator.rules_dir", "./base/rules")
+	viper.SetDefault("subscription.extra_links", []string{})
 
 	viper.AutomaticEnv()
 

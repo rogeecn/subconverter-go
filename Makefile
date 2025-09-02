@@ -55,10 +55,6 @@ dev-cli:
 dev-worker:
 	go run ./cmd/subworker
 
-# Format code
-fmt:
-	go fmt ./...
-
 # Tidy modules
 tidy:
 	go mod tidy
@@ -93,3 +89,6 @@ release:
 	CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o bin/subworker-linux ./cmd/subworker
 	CGO_ENABLED=0 GOOS=darwin go build -ldflags="-w -s" -o bin/subworker-darwin ./cmd/subworker
 	CGO_ENABLED=0 GOOS=windows go build -ldflags="-w -s" -o bin/subworker-windows.exe ./cmd/subworker
+
+fmt:
+	@gofumpt -w -l -extra .

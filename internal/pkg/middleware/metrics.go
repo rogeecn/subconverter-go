@@ -70,7 +70,7 @@ var (
 func MetricsMiddleware() fiber.Handler {
 	return func(c fiber.Ctx) error {
 		start := time.Now()
-		
+
 		// Increment active connections
 		activeConnections.Inc()
 		defer activeConnections.Dec()
@@ -81,7 +81,7 @@ func MetricsMiddleware() fiber.Handler {
 		// Record metrics
 		duration := time.Since(start).Seconds()
 		status := strconv.Itoa(c.Response().StatusCode())
-		
+
 		httpRequestsTotal.WithLabelValues(
 			c.Method(),
 			c.Path(),

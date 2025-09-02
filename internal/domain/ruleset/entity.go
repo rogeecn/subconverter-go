@@ -18,16 +18,16 @@ const (
 type RuleType string
 
 const (
-	RuleTypeDomain      RuleType = "DOMAIN"
-	RuleTypeDomainSuffix RuleType = "DOMAIN-SUFFIX"
+	RuleTypeDomain        RuleType = "DOMAIN"
+	RuleTypeDomainSuffix  RuleType = "DOMAIN-SUFFIX"
 	RuleTypeDomainKeyword RuleType = "DOMAIN-KEYWORD"
-	RuleTypeIPCIDR      RuleType = "IP-CIDR"
-	RuleTypeIPCIDR6     RuleType = "IP-CIDR6"
-	RuleTypeGeoIP       RuleType = "GEOIP"
-	RuleTypeUserAgent   RuleType = "USER-AGENT"
-	RuleTypeURLRegex    RuleType = "URL-REGEX"
-	RuleTypeFinal       RuleType = "FINAL"
-	RuleTypeMatch       RuleType = "MATCH"
+	RuleTypeIPCIDR        RuleType = "IP-CIDR"
+	RuleTypeIPCIDR6       RuleType = "IP-CIDR6"
+	RuleTypeGeoIP         RuleType = "GEOIP"
+	RuleTypeUserAgent     RuleType = "USER-AGENT"
+	RuleTypeURLRegex      RuleType = "URL-REGEX"
+	RuleTypeFinal         RuleType = "FINAL"
+	RuleTypeMatch         RuleType = "MATCH"
 )
 
 type Rule struct {
@@ -51,20 +51,20 @@ type RuleSet struct {
 type ProxyGroupType string
 
 const (
-	ProxyGroupSelect     ProxyGroupType = "select"
-	ProxyGroupURLTest    ProxyGroupType = "url-test"
-	ProxyGroupFallback   ProxyGroupType = "fallback"
+	ProxyGroupSelect      ProxyGroupType = "select"
+	ProxyGroupURLTest     ProxyGroupType = "url-test"
+	ProxyGroupFallback    ProxyGroupType = "fallback"
 	ProxyGroupLoadBalance ProxyGroupType = "load-balance"
-	ProxyGroupRelay      ProxyGroupType = "relay"
+	ProxyGroupRelay       ProxyGroupType = "relay"
 )
 
 type ProxyGroup struct {
 	Name      string         `json:"name" yaml:"name"`
 	Type      ProxyGroupType `json:"type" yaml:"type"`
-	Proxies   []string      `json:"proxies" yaml:"proxies"`
-	URL       string        `json:"url,omitempty" yaml:"url,omitempty"`
-	Interval  int           `json:"interval,omitempty" yaml:"interval,omitempty"`
-	Tolerance int           `json:"tolerance,omitempty" yaml:"tolerance,omitempty"`
-	Filter    string        `json:"filter,omitempty" yaml:"filter,omitempty"`
-	Strategy  string        `json:"strategy,omitempty" yaml:"strategy,omitempty"`
+	Proxies   []string       `json:"proxies" yaml:"proxies"`
+	URL       string         `json:"url,omitempty" yaml:"url,omitempty"`
+	Interval  int            `json:"interval,omitempty" yaml:"interval,omitempty"`
+	Tolerance int            `json:"tolerance,omitempty" yaml:"tolerance,omitempty"`
+	Filter    string         `json:"filter,omitempty" yaml:"filter,omitempty"`
+	Strategy  string         `json:"strategy,omitempty" yaml:"strategy,omitempty"`
 }

@@ -19,14 +19,14 @@ type Config struct {
 
 func New(config Config) *Logger {
 	log := logrus.New()
-	
+
 	// 设置日志级别
 	level, err := logrus.ParseLevel(config.Level)
 	if err != nil {
 		level = logrus.InfoLevel
 	}
 	log.SetLevel(level)
-	
+
 	// 设置日志格式
 	switch config.Format {
 	case "json":
@@ -39,7 +39,7 @@ func New(config Config) *Logger {
 			TimestampFormat: "2006-01-02 15:04:05",
 		})
 	}
-	
+
 	// 设置日志输出
 	switch config.Output {
 	case "stderr":
@@ -47,7 +47,7 @@ func New(config Config) *Logger {
 	default:
 		log.SetOutput(os.Stdout)
 	}
-	
+
 	return &Logger{log}
 }
 
