@@ -236,13 +236,20 @@ func (s *Service) fetchSubscriptions(ctx context.Context, urls []string) ([]*pro
 		go func(u string) {
 			defer wg.Done()
 
-			content, err := s.httpClient.Get(ctx, u)
-			if err != nil {
-				results <- result{err: errors.Wrap(err, fmt.Sprintf("failed to fetch URL: %s", u))}
-				return
+			var text string
+			if strings.HasPrefix(u, "http://") || strings.HasPrefix(u, "https://") {
+				content, err := s.httpClient.Get(ctx, u)
+				if err != nil {
+					results <- result{err: errors.Wrap(err, fmt.Sprintf("failed to fetch URL: %s", u))}
+					return
+				}
+				text = string(content)
+			} else {
+				// treat as direct node link content (e.g., ss://, trojan://)
+				text = u
 			}
 
-			proxies, err := s.parserManager.Parse(ctx, string(content))
+			proxies, err := s.parserManager.Parse(ctx, text)
 			if err != nil {
 				results <- result{err: errors.Wrap(err, fmt.Sprintf("failed to parse subscription: %s", u))}
 				return

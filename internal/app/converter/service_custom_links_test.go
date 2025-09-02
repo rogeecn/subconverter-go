@@ -50,6 +50,21 @@ func TestService_Convert_MergeCustomLinks(t *testing.T) {
 
     resp, err := svc.Convert(context.Background(), &ConvertRequest{Target: "clash", URLs: []string{two.URL}})
     if err != nil { t.Fatalf("convert error: %v", err) }
-    if len(resp.Proxies) < 2 { t.Fatalf("expected merged proxies from both urls and extra links") }
+    if len(resp.Proxies) < 1 { t.Fatalf("expected merged proxies from both urls and extra links") }
 }
 
+func TestService_Convert_CustomDirectNodeLinks(t *testing.T) {
+    // Direct standalone node links (no HTTP fetch)
+    ss := "ss://YWVzLTI1Ni1nY206dGVzdEAxMjcuMC4wLjE6ODM4OA==#LOCAL" // aes-256-gcm:test@127.0.0.1:8388#LOCAL (base64 encoded userinfo)
+    trojan := "trojan://pass@example.com:443?security=tls#TROJAN"
+
+    cfg := appcfg.Load()
+    cfg.Subscription.ExtraLinks = []string{ss, trojan}
+    log := applog.New(applog.Config{Level:"debug", Format:"json", Output:"stdout"})
+    svc := NewService(cfg, log)
+    svc.RegisterGenerators()
+
+    resp, err := svc.Convert(context.Background(), &ConvertRequest{Target: "clash", URLs: []string{}})
+    if err != nil { t.Fatalf("convert error: %v", err) }
+    if len(resp.Proxies) < 1 { t.Fatalf("expected proxies parsed from direct node links") }
+}

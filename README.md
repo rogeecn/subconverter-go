@@ -89,6 +89,30 @@ http://localhost:8080/api/v1/convert?url=https://a/sub&include=HK&include=JP&ren
 http://localhost:8080/sub?url=https://a/sub&url=https://b/sub
 ```
 
+
+### 配置额外独立节点（与订阅合并）
+
+在配置文件中通过 `subscription.extra_links` 增加用户自定义的节点/订阅链接，它们会与请求中的 `url/urls` 一并合并后转换；当请求未提供任何订阅链接时，如果存在 `extra_links`，也会直接转换这些链接。
+
+支持混合：`ss://`、`trojan://` 等独立节点链接，以及 `https://` 订阅链接。
+
+示例（configs/config.yaml）：
+
+```yaml
+subscription:
+  extra_links:
+    # 独立节点链接示例
+    - ss://YWVzLTI1Ni1nY206dGVzdEAxMjcuMC4wLjE6ODM4OA==#LOCAL
+    - trojan://password@example.com:443?security=tls#TROJAN
+    # 额外订阅链接，也可混合
+    - https://upstream.example.com/sub
+```
+
+客户端可直接使用（未传 url 也可）：
+
+```
+http://localhost:8080/api/v1/convert?target=clash
+```
 ### 健康检查
 
 ```bash
