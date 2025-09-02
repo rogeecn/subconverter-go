@@ -8,7 +8,7 @@ SubConverter 的 Go 语言版本实现，提供高性能的代理订阅转换服
 - **多协议支持**: 支持 SS、SSR、VMess、Trojan、Hysteria 等主流协议
 - **多格式输出**: 支持 Clash、Surge、Quantumult、Loon 等格式
 - **云原生**: 支持容器化部署，Kubernetes 友好
-- **缓存支持**: 内置 Redis 缓存，提升响应速度
+- **缓存支持**: 内存缓存，零依赖，快速稳定
 - **API 友好**: RESTful API 设计，支持批量处理
 
 ## 快速开始
@@ -221,7 +221,6 @@ subconverter-go/
 ### 环境要求
 
 - Go 1.21+
-- Redis (可选)
 - Docker (可选)
 
 ### 开发运行

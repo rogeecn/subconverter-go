@@ -33,7 +33,7 @@
 - Frameworks: Go `testing` with `testify` assertions. Place tests alongside code in `*_test.go`.
 - Naming: `TestXxx` for unit tests; table‑driven where appropriate.
 - Running: `make test` (CI runs with `-race -cover`). Coverage report via `make test-coverage`.
-- Environment: Redis is optional; when needed, use `REDIS_HOST`/`REDIS_PORT` and provide fakes where possible.
+- Environment: no external cache dependency; uses in-memory cache.
 
 ## Commit & Pull Request Guidelines
 

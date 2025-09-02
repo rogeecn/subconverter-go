@@ -47,7 +47,7 @@ func init() {
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is ./configs/config.yaml)")
 	rootCmd.PersistentFlags().IntVarP(&workers, "workers", "w", 1, "number of worker goroutines")
-	rootCmd.PersistentFlags().StringVarP(&queueType, "queue", "q", "memory", "queue backend (memory, redis)")
+	rootCmd.PersistentFlags().StringVarP(&queueType, "queue", "q", "memory", "queue backend (memory)")
 
 	rootCmd.AddCommand(startCmd)
 	rootCmd.AddCommand(processCmd)
@@ -68,12 +68,7 @@ func runStart(cmd *cobra.Command, args []string) {
 	var q queue.Queue
 	var err error
 
-	switch queueType {
-	case "redis":
-		q, err = queue.NewRedisQueue(cfg.Redis)
-	default:
-		q = queue.NewMemoryQueue()
-	}
+	q = queue.NewMemoryQueue()
 
 	if err != nil {
 		log.WithError(err).Fatal("Failed to initialize queue")

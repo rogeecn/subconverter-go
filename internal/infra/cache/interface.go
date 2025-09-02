@@ -5,9 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/redis/go-redis/v9"
-	"github.com/rogeecn/subconverter-go/internal/infra/config"
-)
+	)
 
 // Cache defines the interface for cache operations
 type Cache interface {
@@ -95,38 +93,4 @@ func (c *MemoryCache) cleanup() {
 	}
 }
 
-// RedisCache implements Redis-based cache
-type RedisCache struct {
-	client *redis.Client
-}
-
-// NewRedisCache creates a new Redis cache
-func NewRedisCache(cfg *config.RedisConfig) *RedisCache {
-	client := redis.NewClient(&redis.Options{
-		Addr:     cfg.Host + ":" + cfg.Port,
-		Password: cfg.Password,
-		DB:       cfg.Database,
-	})
-
-	return &RedisCache{client: client}
-}
-
-func (c *RedisCache) Get(ctx context.Context, key string) ([]byte, error) {
-	val, err := c.client.Get(ctx, key).Bytes()
-	if err == redis.Nil {
-		return nil, nil
-	}
-	return val, err
-}
-
-func (c *RedisCache) Set(ctx context.Context, key string, value []byte, ttl time.Duration) error {
-	return c.client.Set(ctx, key, value, ttl).Err()
-}
-
-func (c *RedisCache) Delete(ctx context.Context, key string) error {
-	return c.client.Del(ctx, key).Err()
-}
-
-func (c *RedisCache) Health(ctx context.Context) error {
-	return c.client.Ping(ctx).Err()
-}
+// Note: Redis-based cache removed; using in-memory cache only.

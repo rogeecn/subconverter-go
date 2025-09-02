@@ -8,12 +8,6 @@ log:
   format: "json"
   output: "stdout"
 
-redis:
-  enabled: false
-  host: "localhost"
-  port: 6379
-  password: ""
-  database: 0
 
 cache:
   ttl: 300

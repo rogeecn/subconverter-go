@@ -8,7 +8,6 @@ import (
 type Config struct {
     Server ServerConfig `yaml:"server"`
     Log    LogConfig    `yaml:"log"`
-    Redis  RedisConfig  `yaml:"redis"`
     Cache  CacheConfig  `yaml:"cache"`
     Security SecurityConfig `yaml:"security"`
     Parser ParserConfig `yaml:"parser"`
@@ -26,14 +25,6 @@ type LogConfig struct {
 	Level  string `yaml:"level"`
 	Format string `yaml:"format"`
 	Output string `yaml:"output"`
-}
-
-type RedisConfig struct {
-	Enabled  bool   `yaml:"enabled"`
-	Host     string `yaml:"host"`
-	Port     string `yaml:"port"`
-	Password string `yaml:"password"`
-	Database int    `yaml:"database"`
 }
 
 type CacheConfig struct {
@@ -86,11 +77,7 @@ func Load() *Config {
 	viper.SetDefault("log.level", "info")
 	viper.SetDefault("log.format", "json")
 	viper.SetDefault("log.output", "stdout")
-	viper.SetDefault("redis.enabled", false)
-	viper.SetDefault("redis.host", "localhost")
-	viper.SetDefault("redis.port", "6379")
-	viper.SetDefault("redis.database", 0)
-	viper.SetDefault("cache.ttl", 300)
+					viper.SetDefault("cache.ttl", 300)
 	viper.SetDefault("cache.max_size", 1000)
 	viper.SetDefault("security.rate_limit.enabled", true)
 	viper.SetDefault("security.rate_limit.requests", 100)
