@@ -1,15 +1,17 @@
 package generator
 
 import (
-	"context"
-	"fmt"
-	"strings"
+    "context"
+    "fmt"
+    "regexp"
+    "strconv"
+    "strings"
 
-	"github.com/rogeecn/subconverter-go/internal/app/template"
-	"github.com/rogeecn/subconverter-go/internal/domain/proxy"
-	"github.com/rogeecn/subconverter-go/internal/domain/ruleset"
-	"github.com/samber/lo"
-	"gopkg.in/yaml.v3"
+    "github.com/rogeecn/subconverter-go/internal/app/template"
+    "github.com/rogeecn/subconverter-go/internal/domain/proxy"
+    "github.com/rogeecn/subconverter-go/internal/domain/ruleset"
+    "github.com/samber/lo"
+    "gopkg.in/yaml.v3"
 )
 
 type ClashGenerator struct {
@@ -64,12 +66,14 @@ func (g *ClashGenerator) Generate(ctx context.Context, proxies []*proxy.Proxy, r
 		config[k] = v
 	}
 
-	data, err := yaml.Marshal(config)
-	if err != nil {
-		return "", fmt.Errorf("failed to marshal YAML: %v", err)
-	}
+    data, err := yaml.Marshal(config)
+    if err != nil {
+        return "", fmt.Errorf("failed to marshal YAML: %v", err)
+    }
 
-	return string(data), nil
+    // Ensure unicode characters (e.g., emojis) are not shown as \UXXXXXXXX
+    // Some environments may render surrogate escapes; convert them back.
+    return unescapeYAMLUnicode(string(data)), nil
 }
 
 func (g *ClashGenerator) buildProxies(proxies []*proxy.Proxy) []map[string]interface{} {
@@ -359,4 +363,21 @@ func parsePluginOpts(opts string) map[string]interface{} {
 		}
 	}
 	return result
+}
+
+// unescapeYAMLUnicode replaces YAML-style \UXXXXXXXX escapes with actual runes for better readability
+func unescapeYAMLUnicode(s string) string {
+    re := regexp.MustCompile(`\\U([0-9a-fA-F]{8})`)
+    return re.ReplaceAllStringFunc(s, func(m string) string {
+        sub := re.FindStringSubmatch(m)
+        if len(sub) != 2 {
+            return m
+        }
+        v, err := strconv.ParseUint(sub[1], 16, 32)
+        if err != nil {
+            return m
+        }
+        r := rune(v)
+        return string(r)
+    })
 }
