@@ -226,16 +226,16 @@ snell://chacha20-ietf-poly1305:password@hostname:port?obfs=http&obfs-host=exampl
 
 ## 10. 总结
 
-| 客户端        | 节点表示           | 订阅内容 (解码后)              | 格式                  |
-| ------------- | ------------------ | ------------------------------ | --------------------- |
-| Shadowsocks   | `ss://` URI        | 每行一个 `ss://` 链接          | Base64 编码的纯文本   |
-| V2Ray (VMess) | `vmess://` URI     | 每行一个 `vmess://` 链接       | Base64 编码的纯文本   |
-| VLESS         | `vless://` URI     | 每行一个 `vless://` 链接       | Base64 编码的纯文本   |
-| Trojan        | `trojan://` URI    | 每行一个 `trojan://` 链接      | Base64 编码的纯文本   |
-| Hysteria/Hy2  | `hysteria://`/`hysteria2://` | 多行链接                     | Base64 编码的纯文本   |
-| SSR           | `ssr://` URI       | 每行一个 `ssr://` 链接         | Base64 编码的纯文本   |
-| Snell         | `snell://` URI     | 每行一个 `snell://` 链接       | Base64 编码的纯文本   |
-| Clash         | YAML 对象          | 完整的 YAML 配置文件           | YAML                  |
+| 客户端        | 节点表示                     | 订阅内容 (解码后)         | 格式                |
+| ------------- | ---------------------------- | ------------------------- | ------------------- |
+| Shadowsocks   | `ss://` URI                  | 每行一个 `ss://` 链接     | Base64 编码的纯文本 |
+| V2Ray (VMess) | `vmess://` URI               | 每行一个 `vmess://` 链接  | Base64 编码的纯文本 |
+| VLESS         | `vless://` URI               | 每行一个 `vless://` 链接  | Base64 编码的纯文本 |
+| Trojan        | `trojan://` URI              | 每行一个 `trojan://` 链接 | Base64 编码的纯文本 |
+| Hysteria/Hy2  | `hysteria://`/`hysteria2://` | 多行链接                  | Base64 编码的纯文本 |
+| SSR           | `ssr://` URI                 | 每行一个 `ssr://` 链接    | Base64 编码的纯文本 |
+| Snell         | `snell://` URI               | 每行一个 `snell://` 链接  | Base64 编码的纯文本 |
+| Clash         | YAML 对象                    | 完整的 YAML 配置文件      | YAML                |
 
 ## 11. Reality/XTLS 参数说明（VLESS）
 
@@ -274,59 +274,59 @@ proxies:
     uuid: <uuid>
     udp: true
     tls: true
-    servername: example.com     # 对应 sni
+    servername: example.com # 对应 sni
     flow: xtls-rprx-vision
-    client-fingerprint: chrome  # 对应 fp
+    client-fingerprint: chrome # 对应 fp
     reality-opts:
-      public-key: <pbk>         # 对应 pbk
-      short-id: <sid>           # 对应 sid
-      spider-x: "/"            # 对应 spx
+      public-key: <pbk> # 对应 pbk
+      short-id: <sid> # 对应 sid
+      spider-x: "/" # 对应 spx
 ```
 
 - VLESS + WS + TLS
 
 ```yaml
-  - name: vless-ws
-    type: vless
-    server: host
-    port: 443
-    uuid: <uuid>
-    udp: true
-    tls: true
-    servername: example.com
-    network: ws
-    ws-opts:
-      path: "/path"
-      headers:
-        Host: example.com
+- name: vless-ws
+  type: vless
+  server: host
+  port: 443
+  uuid: <uuid>
+  udp: true
+  tls: true
+  servername: example.com
+  network: ws
+  ws-opts:
+    path: "/path"
+    headers:
+      Host: example.com
 ```
 
 - Trojan（TCP/WS + TLS）
 
 ```yaml
-  - name: trojan-ws
-    type: trojan
-    server: host
-    port: 443
-    password: <password>
-    sni: example.com            # 或 servername
-    network: ws
-    ws-opts:
-      path: "/ws"
-      headers:
-        Host: example.com
+- name: trojan-ws
+  type: trojan
+  server: host
+  port: 443
+  password: <password>
+  sni: example.com # 或 servername
+  network: ws
+  ws-opts:
+    path: "/ws"
+    headers:
+      Host: example.com
 ```
 
 - Hysteria2
 
 ```yaml
-  - name: hy2
-    type: hysteria2
-    server: host
-    port: 443
-    password: <token>
-    sni: example.com
-    insecure: false
+- name: hy2
+  type: hysteria2
+  server: host
+  port: 443
+  password: <token>
+  sni: example.com
+  insecure: false
 ```
 
 提示：标准 Clash 不支持 VLESS；上述 VLESS/Reality 需要 Clash.Meta。
@@ -379,21 +379,21 @@ Proxy = hy2, hysteria2, host, 443, password=<token>, sni=example.com, alpn=h3, f
 
 ## 13. URI → 客户端字段映射对照（常见项）
 
-| URI 参数/字段            | 语义/协议               | Clash(.Meta)                | Surge                               | Quantumult X                         |
-| ------------------------ | ----------------------- | --------------------------- | ----------------------------------- | ------------------------------------ |
-| `hostname` / `add`       | 服务器地址              | `server`                    | 第2字段（主机名）                   | `host`（如 `vmess=host:...`）        |
-| `port`                   | 端口                    | `port`                      | 第3字段（端口）                     | `:port`（如 `host:443`）             |
-| `id`/`uuid` (VMess/VLESS)| 用户ID/UUID             | `uuid` (vless/vmess)        | `username=<uuid>`(vmess)            | `password=<uuid>`(vmess)、`encryption=none`(vless) |
-| `password` (Trojan/Hy2)  | 密码/令牌               | `password`                  | `password=<...>`                    | `password=<...>`/`token=<...>`       |
-| `security=tls`           | 启用 TLS                | `tls: true`                 | `tls=true`（默认）                  | `tls=true`/`tls-host=...`            |
-| `sni` / `host`           | TLS SNI/WS Host         | `servername`/`ws-opts.headers.Host` | `sni=example.com`             | `tls-host=...`/`obfs-host=...`       |
-| `network=ws`             | WebSocket 传输          | `network: ws` + `ws-opts`   | `ws=true, ws-path=..., ws-headers=...` | `obfs=ws, obfs-uri=..., obfs-host=...` |
-| `path`                   | WS 路径                 | `ws-opts.path`              | `ws-path=/path`                     | `obfs-uri=/path`                     |
-| `flow=xtls-rprx-vision`  | XTLS Vision（Reality）  | `flow: xtls-rprx-vision`    | 不支持（使用 Trojan/VMess/Hy2）     | `flow=xtls-rprx-vision`(vless 新版)  |
-| `security=reality`       | Reality                 | `reality-opts.*` + `tls`    | 不支持                              | `reality=true, pbk, sid, fp`         |
-| `pbk`/`sid`/`spx`/`fp`   | Reality 公钥/短ID/SpiderX/指纹 | `reality-opts.public-key/short-id/spider-x`, `client-fingerprint` | 不支持 | `pbk`/`sid`/`fp`（字段名随版本） |
-| `insecure=1`/`skip-cert-verify=true` | 跳过证书校验 | `skip-cert-verify: true`    | `skip-cert-verify=true`             | `tls-verification=false`             |
-| Hy2 专用 `alpn=h3`       | 指定 ALPN               | `alpn: [h3]`（若支持）       | `alpn=h3`                           | `alpn=h3`（若支持）                  |
+| URI 参数/字段                        | 语义/协议                       | Clash(.Meta)                                                      | Surge                                  | Quantumult X                                       |
+| ------------------------------------ | ------------------------------- | ----------------------------------------------------------------- | -------------------------------------- | -------------------------------------------------- |
+| `hostname` / `add`                   | 服务器地址                      | `server`                                                          | 第 2 字段（主机名）                    | `host`（如 `vmess=host:...`）                      |
+| `port`                               | 端口                            | `port`                                                            | 第 3 字段（端口）                      | `:port`（如 `host:443`）                           |
+| `id`/`uuid` (VMess/VLESS)            | 用户 ID/UUID                    | `uuid` (vless/vmess)                                              | `username=<uuid>`(vmess)               | `password=<uuid>`(vmess)、`encryption=none`(vless) |
+| `password` (Trojan/Hy2)              | 密码/令牌                       | `password`                                                        | `password=<...>`                       | `password=<...>`/`token=<...>`                     |
+| `security=tls`                       | 启用 TLS                        | `tls: true`                                                       | `tls=true`（默认）                     | `tls=true`/`tls-host=...`                          |
+| `sni` / `host`                       | TLS SNI/WS Host                 | `servername`/`ws-opts.headers.Host`                               | `sni=example.com`                      | `tls-host=...`/`obfs-host=...`                     |
+| `network=ws`                         | WebSocket 传输                  | `network: ws` + `ws-opts`                                         | `ws=true, ws-path=..., ws-headers=...` | `obfs=ws, obfs-uri=..., obfs-host=...`             |
+| `path`                               | WS 路径                         | `ws-opts.path`                                                    | `ws-path=/path`                        | `obfs-uri=/path`                                   |
+| `flow=xtls-rprx-vision`              | XTLS Vision（Reality）          | `flow: xtls-rprx-vision`                                          | 不支持（使用 Trojan/VMess/Hy2）        | `flow=xtls-rprx-vision`(vless 新版)                |
+| `security=reality`                   | Reality                         | `reality-opts.*` + `tls`                                          | 不支持                                 | `reality=true, pbk, sid, fp`                       |
+| `pbk`/`sid`/`spx`/`fp`               | Reality 公钥/短 ID/SpiderX/指纹 | `reality-opts.public-key/short-id/spider-x`, `client-fingerprint` | 不支持                                 | `pbk`/`sid`/`fp`（字段名随版本）                   |
+| `insecure=1`/`skip-cert-verify=true` | 跳过证书校验                    | `skip-cert-verify: true`                                          | `skip-cert-verify=true`                | `tls-verification=false`                           |
+| Hy2 专用 `alpn=h3`                   | 指定 ALPN                       | `alpn: [h3]`（若支持）                                            | `alpn=h3`                              | `alpn=h3`（若支持）                                |
 
 提示：表格仅列常见关键字段。个别客户端对参数名、可选值和兼容性存在版本差异，实际以客户端文档为准。
 
@@ -571,21 +571,21 @@ hysteria2=example.com:443, password=<token>, sni=example.com, alpn=h3, skip-cert
 
 ### 16.1 故障对照表（症状 → 原因 → 修复）
 
-| 症状 | 可能原因 | 修复建议 |
-| --- | --- | --- |
-| TLS handshake failed | `sni` 与证书不匹配、证书链缺失 | 设置正确 `servername/sni`；补全中间证书或更新证书 |
-| 400/404 on WS | `ws-opts.path` 错误、`Host` 头不匹配反代 | 路径以 `/` 开头；设置 `Host` 与反代一致 |
-| Hy2 无法连通 | `alpn` 不匹配、UDP 被阻断 | 统一 `alpn=h3` 或移除；检查防火墙与端口映射 |
-| 订阅解析失败 | Base64 填充缺失/URL-safe 变体 | 补齐 `=`，替换 `-_` 为 `+/` 再解码 |
-| Reality 不生效 | `pbk/sid/spx/flow(fp)` 不一致 | 与服务端配置逐一核对，避免混用 WS |
-| 速率异常 | 走错策略/直连 | 校验 `proxy-groups` 与 `rules`，使用基准测试定位 |
-| DNS 异常 | 污染或解析错误 | 客户端设置可信 DNS/Bootstrap，或使用 DoH/DoQ |
+| 症状                 | 可能原因                                 | 修复建议                                          |
+| -------------------- | ---------------------------------------- | ------------------------------------------------- |
+| TLS handshake failed | `sni` 与证书不匹配、证书链缺失           | 设置正确 `servername/sni`；补全中间证书或更新证书 |
+| 400/404 on WS        | `ws-opts.path` 错误、`Host` 头不匹配反代 | 路径以 `/` 开头；设置 `Host` 与反代一致           |
+| Hy2 无法连通         | `alpn` 不匹配、UDP 被阻断                | 统一 `alpn=h3` 或移除；检查防火墙与端口映射       |
+| 订阅解析失败         | Base64 填充缺失/URL-safe 变体            | 补齐 `=`，替换 `-_` 为 `+/` 再解码                |
+| Reality 不生效       | `pbk/sid/spx/flow(fp)` 不一致            | 与服务端配置逐一核对，避免混用 WS                 |
+| 速率异常             | 走错策略/直连                            | 校验 `proxy-groups` 与 `rules`，使用基准测试定位  |
+| DNS 异常             | 污染或解析错误                           | 客户端设置可信 DNS/Bootstrap，或使用 DoH/DoQ      |
 
 ## 17. 批量转换脚本示例（URI → Clash.Meta）
 
 方案 A（推荐）：使用本仓库 CLI
 
-```
+```bash
 # 安装 CLI
 go install ./cmd/subctl
 
@@ -596,7 +596,7 @@ subctl convert -u file://$(pwd)/urls.txt -t clash -o clash.yaml -c configs/confi
 
 方案 B（增强示例 Go 脚本：覆盖 VMess(WS+TLS) / VLESS(Reality/WS) / Trojan(WS+TLS) / Hysteria2 / SSR，输出完整 Clash.Meta 配置骨架）
 
-```
+```go
 // 保存为 tools/uri2clashmeta.go
 // 用法：
 //   go run tools/uri2clashmeta.go urls.txt > clash.yaml
