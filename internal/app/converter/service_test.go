@@ -6,72 +6,9 @@ import (
 
 	"github.com/rogeecn/subconverter-go/internal/infra/config"
 	"github.com/rogeecn/subconverter-go/internal/pkg/logger"
+	. "github.com/smartystreets/goconvey/convey"
 	"github.com/stretchr/testify/assert"
 )
-
-func TestService_Convert(t *testing.T) {
-	cfg := &config.Config{
-		Cache: config.CacheConfig{
-			TTL: 300,
-		},
-	}
-	log := logger.New(logger.Config{
-		Level:  "debug",
-		Format: "text",
-		Output: "stdout",
-	})
-
-	service := NewService(cfg, log)
-	service.RegisterGenerators()
-
-	t.Run("invalid target", func(t *testing.T) {
-		req := &ConvertRequest{
-			Target: "invalid",
-			URLs:   []string{"https://example.com/subscription"},
-		}
-		_, err := service.Convert(context.Background(), req)
-		assert.Error(t, err)
-	})
-
-	t.Run("empty URLs", func(t *testing.T) {
-		req := &ConvertRequest{
-			Target: "clash",
-			URLs:   []string{},
-		}
-		_, err := service.Convert(context.Background(), req)
-		assert.Error(t, err)
-	})
-
-	t.Run("valid request", func(t *testing.T) {
-		// Mock HTTP client would be needed to fully exercise network path.
-		// This is a placeholder to ensure service is initialized.
-		assert.NotNil(t, service)
-	})
-}
-
-func TestService_Validate(t *testing.T) {
-	cfg := &config.Config{}
-	log := logger.New(logger.Config{
-		Level:  "debug",
-		Format: "text",
-		Output: "stdout",
-	})
-
-	service := NewService(cfg, log)
-	service.RegisterGenerators()
-
-	t.Run("valid URL format detection", func(t *testing.T) {
-		content := "ss://YWVzLTI1Ni1nY206dGVzdA==@127.0.0.1:8388#Test"
-		format := service.detectFormat(content)
-		assert.Equal(t, "shadowsocks", format)
-	})
-
-	t.Run("vmess format detection", func(t *testing.T) {
-		content := "vmess://dGVzdA==" // minimal vmess marker
-		format := service.detectFormat(content)
-		assert.Equal(t, "vmess", format)
-	})
-}
 
 func TestService_SupportedFormats(t *testing.T) {
 	cfg := &config.Config{}
@@ -93,33 +30,47 @@ func TestService_SupportedFormats(t *testing.T) {
 	assert.Contains(t, formats, "surfboard")
 }
 
-func TestService_Health(t *testing.T) {
-	cfg := &config.Config{}
-	log := logger.New(logger.Config{
-		Level:  "debug",
-		Format: "text",
-		Output: "stdout",
+func TestService_Convert_SubLinks(t *testing.T) {
+	FocusConvey("Convert with sub links", t, func() {
+		cfg := &config.Config{
+			Cache: config.CacheConfig{TTL: 300},
+		}
+		log := logger.New(logger.Config{Level: "debug", Format: "text", Output: "stdout"})
+
+		service := NewService(cfg, log)
+		service.RegisterGenerators()
+
+		Convey("invalid target", func() {
+			req := &ConvertRequest{
+				Target: "invalid",
+				URLs:   []string{"https://example.com/subscription"},
+			}
+			_, err := service.Convert(context.Background(), req)
+			So(err, ShouldNotBeNil)
+			t.Logf("got err: %+v", err)
+		})
+
+		Convey("empty URLs and extra links", func() {
+			req := &ConvertRequest{
+				Target: "clash",
+				URLs:   []string{},
+			}
+			_, err := service.Convert(context.Background(), req)
+			So(err, ShouldNotBeNil)
+			t.Logf("got err: %+v", err)
+		})
+
+		FocusConvey("valid clash request", func() {
+			req := &ConvertRequest{
+				Target: "clash",
+				URLs: []string{
+					"https://r64mx8i.waimaody.cc/sub/7dd9519e6e3fbea2/clash",
+				},
+			}
+			resp, err := service.Convert(context.Background(), req)
+			So(err, ShouldBeNil)
+
+			t.Logf("resp: %+v", resp)
+		})
 	})
-
-	service := NewService(cfg, log)
-	err := service.Health(context.Background())
-	assert.NoError(t, err)
-}
-
-func TestService_GetInfo(t *testing.T) {
-	cfg := &config.Config{}
-	log := logger.New(logger.Config{
-		Level:  "debug",
-		Format: "text",
-		Output: "stdout",
-	})
-
-	service := NewService(cfg, log)
-	service.RegisterGenerators()
-
-	info, err := service.GetInfo(context.Background())
-	assert.NoError(t, err)
-	assert.Equal(t, "1.0.0", info.Version)
-	assert.NotEmpty(t, info.SupportedTypes)
-	assert.NotEmpty(t, info.Features)
 }

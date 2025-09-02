@@ -1,0 +1,485 @@
+mixed-port: 7890
+allow-lan: false
+mode: Rule
+ipv6: false
+log-level: warning
+external-controller: '127.0.0.1:9090'
+global-client-fingerprint: chrome
+geox-url:
+ geoip: 'https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.dat'
+ geosite: 'https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geosite.dat'
+ mmdb: 'https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/country.mmdb'
+dns:
+ enabled: true
+ nameserver:
+  - 'https://dns.alidns.com/dns-query'
+  - 'https://doh.pub/dns-query'
+  - 'https://doh.360.cn/dns-query'
+ default-nameserver:
+  - 223.5.5.5
+  - 119.29.29.29
+  - 180.76.76.76
+tun:
+ enabled: true
+ auto-route: true
+ auto-detect-interface: true
+ dns-hijack:
+  - 223.5.5.5
+  - 119.29.29.29
+  - 180.76.76.76
+  - 8.8.8.8
+  - 8.8.4.4
+  - 1.1.1.1
+  - 1.0.0.1
+proxies:
+ -
+  name: 'C01 | 美国 | 1000M带宽 | CN2 GIA 三网直连线路'
+  type: vmess
+  server: cg1c01.waimaogogogo.cc
+  port: 443
+  uuid: b44fc2db-0a2b-4788-b2c1-bd18f7ec8c68
+  alterId: 0
+  cipher: auto
+  udp: true
+  tls: true
+  client-fingerprint: ''
+  fingerprint: ''
+  flow: ''
+  skip-cert-verify: false
+  servername: cg1c01.waimaogogogo.cc
+  network: ws
+  ws-opts:
+   path: /api/v1/graphql
+   headers: { Host: cg1c01.waimaogogogo.cc }
+  h2-opts: null
+  http-opts: null
+  grpc-opts: null
+  reality-opts: null
+ -
+  name: 'C02 | 美国 | 1000M带宽 | CN2 GIA 三网直连线路'
+  type: vmess
+  server: cg1c02.waimaogogogo.cc
+  port: 443
+  uuid: b44fc2db-0a2b-4788-b2c1-bd18f7ec8c68
+  alterId: 0
+  cipher: auto
+  udp: true
+  tls: true
+  client-fingerprint: ''
+  fingerprint: ''
+  flow: ''
+  skip-cert-verify: false
+  servername: cg1c02.waimaogogogo.cc
+  network: ws
+  ws-opts:
+   path: /api/v1/graphql
+   headers: { Host: cg1c02.waimaogogogo.cc }
+  h2-opts: null
+  http-opts: null
+  grpc-opts: null
+  reality-opts: null
+ -
+  name: 'C03 | 美国 | 1000M带宽 | CN2 GIA 三网直连线路'
+  type: vmess
+  server: cg1c03.waimaogogogo.cc
+  port: 443
+  uuid: b44fc2db-0a2b-4788-b2c1-bd18f7ec8c68
+  alterId: 0
+  cipher: auto
+  udp: true
+  tls: true
+  client-fingerprint: ''
+  fingerprint: ''
+  flow: ''
+  skip-cert-verify: false
+  servername: cg1c03.waimaogogogo.cc
+  network: ws
+  ws-opts:
+   path: /api/v1/graphql
+   headers: { Host: cg1c03.waimaogogogo.cc }
+  h2-opts: null
+  http-opts: null
+  grpc-opts: null
+  reality-opts: null
+ -
+  name: 'C04 | 美国 | 1000M带宽 | CN2 GIA 三网直连线路'
+  type: vmess
+  server: cg1c04.waimaogogogo.cc
+  port: 443
+  uuid: b44fc2db-0a2b-4788-b2c1-bd18f7ec8c68
+  alterId: 0
+  cipher: auto
+  udp: true
+  tls: true
+  client-fingerprint: ''
+  fingerprint: ''
+  flow: ''
+  skip-cert-verify: false
+  servername: cg1c04.waimaogogogo.cc
+  network: ws
+  ws-opts:
+   path: /api/v1/graphql
+   headers: { Host: cg1c04.waimaogogogo.cc }
+  h2-opts: null
+  http-opts: null
+  grpc-opts: null
+  reality-opts: null
+ -
+  name: 'C05 | 美国 | 1000M带宽 | CN2 GIA 三网直连线路'
+  type: vmess
+  server: cg1c05.waimaogogogo.cc
+  port: 443
+  uuid: b44fc2db-0a2b-4788-b2c1-bd18f7ec8c68
+  alterId: 0
+  cipher: auto
+  udp: true
+  tls: true
+  client-fingerprint: ''
+  fingerprint: ''
+  flow: ''
+  skip-cert-verify: false
+  servername: cg1c05.waimaogogogo.cc
+  network: ws
+  ws-opts:
+   path: /api/v1/graphql
+   headers: { Host: cg1c05.waimaogogogo.cc }
+  h2-opts: null
+  http-opts: null
+  grpc-opts: null
+  reality-opts: null
+ -
+  name: 'C06 | 美国 | 1000M带宽 | CN2 GIA 三网直连线路'
+  type: vmess
+  server: cg1c06.waimaogogogo.cc
+  port: 443
+  uuid: b44fc2db-0a2b-4788-b2c1-bd18f7ec8c68
+  alterId: 0
+  cipher: auto
+  udp: true
+  tls: true
+  client-fingerprint: ''
+  fingerprint: ''
+  flow: ''
+  skip-cert-verify: false
+  servername: cg1c06.waimaogogogo.cc
+  network: ws
+  ws-opts:
+   path: /api/v1/graphql
+   headers: { Host: cg1c06.waimaogogogo.cc }
+  h2-opts: null
+  http-opts: null
+  grpc-opts: null
+  reality-opts: null
+ -
+  name: 'C07 | 美国 | 1000M带宽 | CN2 GIA 三网直连线路'
+  type: vmess
+  server: cg1c07.waimaogogogo.cc
+  port: 443
+  uuid: b44fc2db-0a2b-4788-b2c1-bd18f7ec8c68
+  alterId: 0
+  cipher: auto
+  udp: true
+  tls: true
+  client-fingerprint: ''
+  fingerprint: ''
+  flow: ''
+  skip-cert-verify: false
+  servername: cg1c07.waimaogogogo.cc
+  network: ws
+  ws-opts:
+   path: /api/v1/graphql
+   headers: { Host: cg1c07.waimaogogogo.cc }
+  h2-opts: null
+  http-opts: null
+  grpc-opts: null
+  reality-opts: null
+ -
+  name: 'C08 | 俄罗斯 | 1000M带宽 | CN2 GIA 三网直连线路'
+  type: vmess
+  server: cg1c08.waimaogogogo.cc
+  port: 443
+  uuid: b44fc2db-0a2b-4788-b2c1-bd18f7ec8c68
+  alterId: 0
+  cipher: auto
+  udp: true
+  tls: true
+  client-fingerprint: ''
+  fingerprint: ''
+  flow: ''
+  skip-cert-verify: false
+  servername: cg1c08.waimaogogogo.cc
+  network: ws
+  ws-opts:
+   path: /api/v1/graphql
+   headers: { Host: cg1c08.waimaogogogo.cc }
+  h2-opts: null
+  http-opts: null
+  grpc-opts: null
+  reality-opts: null
+ -
+  name: 'C09 | 俄罗斯 | 1000M带宽 | CN2 GIA 三网直连线路'
+  type: vmess
+  server: cg1c09.waimaogogogo.cc
+  port: 443
+  uuid: b44fc2db-0a2b-4788-b2c1-bd18f7ec8c68
+  alterId: 0
+  cipher: auto
+  udp: true
+  tls: true
+  client-fingerprint: ''
+  fingerprint: ''
+  flow: ''
+  skip-cert-verify: false
+  servername: cg1c09.waimaogogogo.cc
+  network: ws
+  ws-opts:
+   path: /api/v1/graphql
+   headers: { Host: cg1c09.waimaogogogo.cc }
+  h2-opts: null
+  http-opts: null
+  grpc-opts: null
+  reality-opts: null
+ -
+  name: 'C10 | 日本 | 1000M带宽 | 外贸专线'
+  type: vmess
+  server: cg1c10.waimaogogogo.cc
+  port: 443
+  uuid: b44fc2db-0a2b-4788-b2c1-bd18f7ec8c68
+  alterId: 0
+  cipher: auto
+  udp: true
+  tls: true
+  client-fingerprint: ''
+  fingerprint: ''
+  flow: ''
+  skip-cert-verify: false
+  servername: cg1c10.waimaogogogo.cc
+  network: ws
+  ws-opts:
+   path: /api/v1/graphql
+   headers: { Host: cg1c10.waimaogogogo.cc }
+  h2-opts: null
+  http-opts: null
+  grpc-opts: null
+  reality-opts: null
+ -
+  name: 'C11 | 日本 | 1000M带宽 | 外贸专线'
+  type: vmess
+  server: cg1c11.waimaogogogo.cc
+  port: 443
+  uuid: b44fc2db-0a2b-4788-b2c1-bd18f7ec8c68
+  alterId: 0
+  cipher: auto
+  udp: true
+  tls: true
+  client-fingerprint: ''
+  fingerprint: ''
+  flow: ''
+  skip-cert-verify: false
+  servername: cg1c11.waimaogogogo.cc
+  network: ws
+  ws-opts:
+   path: /api/v1/graphql
+   headers: { Host: cg1c11.waimaogogogo.cc }
+  h2-opts: null
+  http-opts: null
+  grpc-opts: null
+  reality-opts: null
+ -
+  name: 'C12 | 英国 | 1000M带宽 | 外贸及Tiktok专线'
+  type: vmess
+  server: cg1c12.waimaogogogo.cc
+  port: 443
+  uuid: b44fc2db-0a2b-4788-b2c1-bd18f7ec8c68
+  alterId: 0
+  cipher: auto
+  udp: true
+  tls: true
+  client-fingerprint: ''
+  fingerprint: ''
+  flow: ''
+  skip-cert-verify: false
+  servername: cg1c12.waimaogogogo.cc
+  network: ws
+  ws-opts:
+   path: /api/v1/graphql
+   headers: { Host: cg1c12.waimaogogogo.cc }
+  h2-opts: null
+  http-opts: null
+  grpc-opts: null
+  reality-opts: null
+ -
+  name: 'C13 | 荷兰 | 1000M带宽 | 外贸专线'
+  type: vmess
+  server: cg1c13.waimaogogogo.cc
+  port: 443
+  uuid: b44fc2db-0a2b-4788-b2c1-bd18f7ec8c68
+  alterId: 0
+  cipher: auto
+  udp: true
+  tls: true
+  client-fingerprint: ''
+  fingerprint: ''
+  flow: ''
+  skip-cert-verify: false
+  servername: cg1c13.waimaogogogo.cc
+  network: ws
+  ws-opts:
+   path: /api/v1/graphql
+   headers: { Host: cg1c13.waimaogogogo.cc }
+  h2-opts: null
+  http-opts: null
+  grpc-opts: null
+  reality-opts: null
+ -
+  name: 'C14 | 美国 | 1000M带宽 | CN2 GIA 三网直连线路'
+  type: vmess
+  server: cg1c14.waimaogogogo.cc
+  port: 443
+  uuid: b44fc2db-0a2b-4788-b2c1-bd18f7ec8c68
+  alterId: 0
+  cipher: auto
+  udp: true
+  tls: true
+  client-fingerprint: ''
+  fingerprint: ''
+  flow: ''
+  skip-cert-verify: false
+  servername: cg1c14.waimaogogogo.cc
+  network: ws
+  ws-opts:
+   path: /api/v1/graphql
+   headers: { Host: cg1c14.waimaogogogo.cc }
+  h2-opts: null
+  http-opts: null
+  grpc-opts: null
+  reality-opts: null
+ -
+  name: 'C15 | 韩国 | 1000M带宽 | 外贸专线'
+  type: vmess
+  server: cg1c15.waimaogogogo.cc
+  port: 443
+  uuid: b44fc2db-0a2b-4788-b2c1-bd18f7ec8c68
+  alterId: 0
+  cipher: auto
+  udp: true
+  tls: true
+  client-fingerprint: ''
+  fingerprint: ''
+  flow: ''
+  skip-cert-verify: false
+  servername: cg1c15.waimaogogogo.cc
+  network: ws
+  ws-opts:
+   path: /api/v1/graphql
+   headers: { Host: cg1c15.waimaogogogo.cc }
+  h2-opts: null
+  http-opts: null
+  grpc-opts: null
+  reality-opts: null
+ -
+  name: 'C16 | 韩国 | 1000M带宽 | 外贸专线'
+  type: vmess
+  server: cg1c16.waimaogogogo.cc
+  port: 443
+  uuid: b44fc2db-0a2b-4788-b2c1-bd18f7ec8c68
+  alterId: 0
+  cipher: auto
+  udp: true
+  tls: true
+  client-fingerprint: ''
+  fingerprint: ''
+  flow: ''
+  skip-cert-verify: false
+  servername: cg1c16.waimaogogogo.cc
+  network: ws
+  ws-opts:
+   path: /api/v1/graphql
+   headers: { Host: cg1c16.waimaogogogo.cc }
+  h2-opts: null
+  http-opts: null
+  grpc-opts: null
+  reality-opts: null
+proxy-groups:
+ -
+  name: '🚀 节点选择'
+  type: select
+  proxies:
+   - '♻️ 自动选择'
+   - DIRECT
+   - 'C01 | 美国 | 1000M带宽 | CN2 GIA 三网直连线路'
+   - 'C02 | 美国 | 1000M带宽 | CN2 GIA 三网直连线路'
+   - 'C03 | 美国 | 1000M带宽 | CN2 GIA 三网直连线路'
+   - 'C04 | 美国 | 1000M带宽 | CN2 GIA 三网直连线路'
+   - 'C05 | 美国 | 1000M带宽 | CN2 GIA 三网直连线路'
+   - 'C06 | 美国 | 1000M带宽 | CN2 GIA 三网直连线路'
+   - 'C07 | 美国 | 1000M带宽 | CN2 GIA 三网直连线路'
+   - 'C08 | 俄罗斯 | 1000M带宽 | CN2 GIA 三网直连线路'
+   - 'C09 | 俄罗斯 | 1000M带宽 | CN2 GIA 三网直连线路'
+   - 'C10 | 日本 | 1000M带宽 | 外贸专线'
+   - 'C11 | 日本 | 1000M带宽 | 外贸专线'
+   - 'C12 | 英国 | 1000M带宽 | 外贸及Tiktok专线'
+   - 'C13 | 荷兰 | 1000M带宽 | 外贸专线'
+   - 'C14 | 美国 | 1000M带宽 | CN2 GIA 三网直连线路'
+   - 'C15 | 韩国 | 1000M带宽 | 外贸专线'
+   - 'C16 | 韩国 | 1000M带宽 | 外贸专线'
+ -
+  name: '♻️ 自动选择'
+  type: url-test
+  url: 'http://www.gstatic.com/generate_204'
+  interval: 300
+  tolerance: 50
+  proxies:
+   - 'C01 | 美国 | 1000M带宽 | CN2 GIA 三网直连线路'
+   - 'C02 | 美国 | 1000M带宽 | CN2 GIA 三网直连线路'
+   - 'C03 | 美国 | 1000M带宽 | CN2 GIA 三网直连线路'
+   - 'C04 | 美国 | 1000M带宽 | CN2 GIA 三网直连线路'
+   - 'C05 | 美国 | 1000M带宽 | CN2 GIA 三网直连线路'
+   - 'C06 | 美国 | 1000M带宽 | CN2 GIA 三网直连线路'
+   - 'C07 | 美国 | 1000M带宽 | CN2 GIA 三网直连线路'
+   - 'C08 | 俄罗斯 | 1000M带宽 | CN2 GIA 三网直连线路'
+   - 'C09 | 俄罗斯 | 1000M带宽 | CN2 GIA 三网直连线路'
+   - 'C10 | 日本 | 1000M带宽 | 外贸专线'
+   - 'C11 | 日本 | 1000M带宽 | 外贸专线'
+   - 'C12 | 英国 | 1000M带宽 | 外贸及Tiktok专线'
+   - 'C13 | 荷兰 | 1000M带宽 | 外贸专线'
+   - 'C14 | 美国 | 1000M带宽 | CN2 GIA 三网直连线路'
+   - 'C15 | 韩国 | 1000M带宽 | 外贸专线'
+   - 'C16 | 韩国 | 1000M带宽 | 外贸专线'
+ -
+  name: '🎯 全球直连'
+  type: select
+  proxies:
+   - DIRECT
+   - '🚀 节点选择'
+ -
+  name: '🛑 全球拦截'
+  type: select
+  proxies:
+   - REJECT
+   - DIRECT
+   - '🚀 节点选择'
+ -
+  name: '🐟 漏网之鱼'
+  type: select
+  proxies:
+   - DIRECT
+   - '🚀 节点选择'
+rule-providers:
+ clashwm:
+  type: http
+  behavior: classical
+  url: 'https://jipzhwgz.clientdownloads.xyz/downloads/clashwm.list'
+  format: text
+  interval: 3600
+  path: ./rules/clashwm.list
+rules:
+ - 'GEOIP,private,🎯 全球直连'
+ - 'GEOSITE,category-ads-all,🛑 全球拦截'
+ - 'GEOSITE,gfw,🚀 节点选择'
+ - 'GEOIP,TELEGRAM,🚀 节点选择'
+ - 'GEOSITE,telegram,🚀 节点选择'
+ - 'GEOSITE,linkedin,🚀 节点选择'
+ - 'GEOSITE,tiktok,🚀 节点选择'
+ - 'RULE-SET,clashwm,🚀 节点选择'
+ - 'MATCH,🐟 漏网之鱼'

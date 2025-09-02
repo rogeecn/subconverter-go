@@ -16,6 +16,9 @@
 !base/
 !base/**
 
+!fixtures/
+!fixtures/**
+
 !cmd/
 !cmd/**
 
