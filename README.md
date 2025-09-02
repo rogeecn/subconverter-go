@@ -133,6 +133,38 @@ http://localhost:8080/api/v1/convert?target=clash
 curl http://localhost:8080/api/v1/health
 ```
 
+### 客户端示例（Clash / Surge / Quantumult X / Loon）
+
+- Clash / Clash.Meta（推荐）
+  - 路径：Settings → Profiles → New Profile（URL）
+  - 示例：
+    - `http://<host>:8080/sub?url=https://a.example/sub&url=https://b.example/sub`
+    - 仅用 extra_links：`http://<host>:8080/sub?target=clash`
+  - 提示：支持别名 `/sub`，与 `/api/v1/convert` 等价。
+
+- Surge（iOS/macOS）
+  - 路径：Profile → Install from URL（或在已有配置中使用远程片段）
+  - 示例（整份配置）：
+    - `http://<host>:8080/api/v1/convert?target=surge&url=https://a.example/sub`
+  - 若只想生成节点片段，可在规则侧另行合并（取决于现有配置结构）。
+
+- Quantumult X（iOS）
+  - 路径：Settings → Configuration → Download Configuration（或 Servers 导入远程）
+  - 示例：
+    - `http://<host>:8080/api/v1/convert?target=quantumult&url=https://a.example/sub`
+
+- Loon（iOS）
+  - 路径：Configuration → Remote（或从 URL 导入）
+  - 示例：
+    - `http://<host>:8080/api/v1/convert?target=loon&url=https://a.example/sub`
+
+- 其他格式
+  - V2Ray JSON：`http://<host>:8080/api/v1/convert?target=v2ray&url=...`
+  - Surfboard：`http://<host>:8080/api/v1/convert?target=surfboard&url=...`
+
+> 说明：不同客户端的“从 URL 导入/远程配置”入口名称略有差异，请以客户端当前版本实际界面为准。URL 参数可与前文一致（include/exclude/rename/emoji/sort/udp/base_template 等）。
+
+
 ## CLI工具
 
 ### 安装CLI
