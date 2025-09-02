@@ -58,6 +58,109 @@ paths:
         '429':
           $ref: '#/components/responses/RateLimited'
         '500':
+
+
+    get:
+      summary: 直接合并订阅（GET）
+      description: 通过查询参数直接合并订阅与自定义链接并返回目标格式配置（适用于客户端直接订阅）。支持重复 url 参数或使用 urls 逗号分隔。
+      tags:
+        - Conversion
+      parameters:
+        - in: query
+          name: target
+          schema:
+            type: string
+            enum: [clash, surge, quantumult, loon, v2ray, surfboard]
+          description: 目标格式（默认 clash）
+        - in: query
+          name: url
+          schema:
+            type: string
+          description: 订阅或节点链接（可重复）
+          explode: true
+        - in: query
+          name: urls
+          schema:
+            type: string
+          description: 以逗号分隔的一组订阅或节点链接
+        - in: query
+          name: include
+          schema:
+            type: string
+          description: 包含的节点关键词（可重复）
+          explode: true
+        - in: query
+          name: exclude
+          schema:
+            type: string
+          description: 排除的节点关键词（可重复）
+          explode: true
+        - in: query
+          name: include_remarks
+          schema:
+            type: string
+          description: 包含的节点关键词（逗号分隔）
+        - in: query
+          name: exclude_remarks
+          schema:
+            type: string
+          description: 排除的节点关键词（逗号分隔）
+        - in: query
+          name: sort
+          schema:
+            type: boolean
+          description: 按名称排序
+        - in: query
+          name: udp
+          schema:
+            type: boolean
+          description: 启用UDP
+        - in: query
+          name: rule
+          schema:
+            type: string
+          description: 自定义规则（可重复）
+          explode: true
+        - in: query
+          name: rules
+          schema:
+            type: string
+          description: 自定义规则（逗号分隔）
+        - in: query
+          name: rename
+          schema:
+            type: string
+          description: 重命名规则，格式 old->new（可重复）
+          explode: true
+        - in: query
+          name: emoji
+          schema:
+            type: string
+          description: emoji 规则，格式 match:😊（可重复）
+          explode: true
+        - in: query
+          name: base_template
+          schema:
+            type: string
+          description: 基础模板名
+        - in: query
+          name: base
+          schema:
+            type: string
+          description: 基础模板名（别名）
+      responses:
+        '200':
+          description: 转换成功
+          content:
+            application/x-yaml:
+              schema:
+                type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
           $ref: '#/components/responses/InternalError'
 
   /api/v1/convert/batch:
@@ -176,6 +279,38 @@ paths:
               schema:
                 type: string
 
+
+
+  /sub:
+    get:
+      summary: 合并订阅别名（GET）
+      description: 等价于 GET /api/v1/convert，便于客户端直接订阅使用。
+      tags:
+        - Conversion
+      parameters:
+        - in: query
+          name: target
+          schema:
+            type: string
+          description: 目标格式（默认 clash）
+        - in: query
+          name: url
+          schema:
+            type: string
+          description: 订阅或节点链接（可重复）
+          explode: true
+        - in: query
+          name: urls
+          schema:
+            type: string
+          description: 以逗号分隔的一组订阅或节点链接
+      responses:
+        '200':
+          description: 转换成功
+          content:
+            application/x-yaml:
+              schema:
+                type: string
 components:
   schemas:
     ConvertRequest:
