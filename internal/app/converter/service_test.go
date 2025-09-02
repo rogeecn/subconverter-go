@@ -61,7 +61,7 @@ func TestService_Convert_SubLinks(t *testing.T) {
 	srv := startHttpServer()
 	defer srv.Shutdown(context.Background())
 
-	FocusConvey("Convert with sub links", t, func() {
+	Convey("Convert with sub links", t, func() {
 		cfg := &config.Config{
 			Cache: config.CacheConfig{TTL: 300},
 		}
@@ -114,7 +114,7 @@ func TestService_Convert_SubLinks(t *testing.T) {
 			t.Logf("%# v", pretty.Formatter(resp))
 		})
 
-		FocusConvey("valid clash request convert to v2ray", func() {
+		Convey("valid clash request convert to v2ray", func() {
 			req := &ConvertRequest{
 				Target: "v2ray",
 				URLs: []string{
