@@ -8,8 +8,8 @@ import (
 
 // ConvertRequest represents a conversion request
 type ConvertRequest struct {
-	Target    string   `json:"target" validate:"required"`
-	URLs      []string `json:"urls" validate:"required,gt=0"`
+	Target    string   `json:"target"            validate:"required"`
+	URLs      []string `json:"urls"              validate:"required,gt=0"`
 	ConfigURL string   `json:"config,omitempty"`
 	Options   Options  `json:"options,omitempty"`
 }

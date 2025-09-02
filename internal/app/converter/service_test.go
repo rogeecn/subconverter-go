@@ -2,8 +2,12 @@ package converter
 
 import (
 	"context"
+	"net/http"
 	"testing"
+	"time"
 
+	"github.com/kr/pretty"
+	"github.com/rogeecn/fabfile"
 	"github.com/rogeecn/subconverter-go/internal/infra/config"
 	"github.com/rogeecn/subconverter-go/internal/pkg/logger"
 	. "github.com/smartystreets/goconvey/convey"
@@ -30,7 +34,33 @@ func TestService_SupportedFormats(t *testing.T) {
 	assert.Contains(t, formats, "surfboard")
 }
 
+func startHttpServer() *http.Server {
+	http.Handle("/clash", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		b := fabfile.MustRead("fixtures/clash.txt")
+		w.Header().Set("Content-Type", "text/plain")
+		w.WriteHeader(http.StatusOK)
+		w.Write(b)
+	}))
+	http.Handle("/v2ray", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		b := fabfile.MustRead("fixtures/v2ray.txt")
+		w.Header().Set("Content-Type", "text/plain")
+		w.WriteHeader(http.StatusOK)
+		w.Write(b)
+	}))
+	go http.ListenAndServe(":18080", nil)
+	time.Sleep(time.Second)
+	server := &http.Server{Addr: ":18080"}
+	go func() {
+		_ = server.ListenAndServe()
+	}()
+	time.Sleep(time.Second)
+	return server
+}
+
 func TestService_Convert_SubLinks(t *testing.T) {
+	srv := startHttpServer()
+	defer srv.Shutdown(context.Background())
+
 	FocusConvey("Convert with sub links", t, func() {
 		cfg := &config.Config{
 			Cache: config.CacheConfig{TTL: 300},
@@ -47,7 +77,6 @@ func TestService_Convert_SubLinks(t *testing.T) {
 			}
 			_, err := service.Convert(context.Background(), req)
 			So(err, ShouldNotBeNil)
-			t.Logf("got err: %+v", err)
 		})
 
 		Convey("empty URLs and extra links", func() {
@@ -57,20 +86,58 @@ func TestService_Convert_SubLinks(t *testing.T) {
 			}
 			_, err := service.Convert(context.Background(), req)
 			So(err, ShouldNotBeNil)
-			t.Logf("got err: %+v", err)
 		})
 
-		FocusConvey("valid clash request", func() {
+		Convey("valid clash request convert to clash", func() {
 			req := &ConvertRequest{
 				Target: "clash",
 				URLs: []string{
-					"https://r64mx8i.waimaody.cc/sub/7dd9519e6e3fbea2/clash",
+					"http://localhost:18080/clash",
 				},
 			}
 			resp, err := service.Convert(context.Background(), req)
 			So(err, ShouldBeNil)
 
-			t.Logf("resp: %+v", resp)
+			t.Logf("%# v", pretty.Formatter(resp))
+		})
+
+		Convey("valid v2ray request convert to clash", func() {
+			req := &ConvertRequest{
+				Target: "clash",
+				URLs: []string{
+					"http://localhost:18080/v2ray",
+				},
+			}
+			resp, err := service.Convert(context.Background(), req)
+			So(err, ShouldBeNil)
+
+			t.Logf("%# v", pretty.Formatter(resp))
+		})
+
+		FocusConvey("valid clash request convert to v2ray", func() {
+			req := &ConvertRequest{
+				Target: "v2ray",
+				URLs: []string{
+					"http://localhost:18080/clash",
+				},
+			}
+			resp, err := service.Convert(context.Background(), req)
+			So(err, ShouldBeNil)
+
+			t.Logf("%# v", pretty.Formatter(resp))
+		})
+
+		Convey("valid v2ray request convert to v2ray", func() {
+			req := &ConvertRequest{
+				Target: "v2ray",
+				URLs: []string{
+					"http://localhost:18080/v2ray",
+				},
+			}
+			resp, err := service.Convert(context.Background(), req)
+			So(err, ShouldBeNil)
+
+			t.Logf("%# v", pretty.Formatter(resp))
 		})
 	})
 }
