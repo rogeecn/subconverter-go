@@ -3,32 +3,30 @@
 
 # 但保留以下文件和文件夹
 !.gitignore
-!README.md
+!AGENTS.md
+!docker-compose.yml
+!Dockerfile
 !go.mod
 !go.sum
 !Makefile
-!docker-compose.yml
-!Dockerfile
-!AGENTS.md
+!README.md
 !subscription_formats.md
-!base/
-!cmd/
-!configs/
-!docs/
-!internal/
-!k8s/
 
-# 保留 base 下的所有内容
+# dirs
+!base/
 !base/**
-# 保留 bin 下的所有内容
-!bin/**
-# 保留 cmd 下的所有内容
+
+!cmd/
 !cmd/**
-# 保留 configs 下的所有内容
+
+!configs/
 !configs/**
-# 保留 docs 下的所有内容
+
+!docs/
 !docs/**
-# 保留 internal 下的所有内容
+
+!internal/
 !internal/**
-# 保留 k8s 下的所有内容
+
+!k8s/
 !k8s/**
