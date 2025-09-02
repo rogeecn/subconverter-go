@@ -1,21 +1,21 @@
 package server
 
 import (
-    "context"
-    "fmt"
-    "strings"
-    "time"
+	"context"
+	"fmt"
+	"strings"
+	"time"
 
-    "github.com/gofiber/fiber/v2"
-    "github.com/gofiber/fiber/v2/middleware/cors"
-    "github.com/gofiber/fiber/v2/middleware/limiter"
-    "github.com/gofiber/fiber/v2/middleware/logger"
-    "github.com/gofiber/fiber/v2/middleware/recover"
-    "github.com/subconverter/subconverter-go/internal/app/generator"
-    "github.com/subconverter/subconverter-go/internal/app/converter"
-    "github.com/subconverter/subconverter-go/internal/infra/config"
-    "github.com/subconverter/subconverter-go/internal/pkg/errors"
-    "github.com/subconverter/subconverter-go/internal/pkg/validator"
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/limiter"
+	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/fiber/v2/middleware/recover"
+	"github.com/rogeecn/subconverter-go/internal/app/converter"
+	"github.com/rogeecn/subconverter-go/internal/app/generator"
+	"github.com/rogeecn/subconverter-go/internal/infra/config"
+	"github.com/rogeecn/subconverter-go/internal/pkg/errors"
+	"github.com/rogeecn/subconverter-go/internal/pkg/validator"
 )
 
 // Router manages HTTP routes
@@ -73,9 +73,9 @@ func (r *Router) SetupRoutes() {
 	// API routes
 	api := r.app.Group("/api/v1")
 
-    // Conversion routes
-    api.Post("/convert", r.handleConvert)
-    api.Get("/convert", r.handleConvertGet)
+	// Conversion routes
+	api.Post("/convert", r.handleConvert)
+	api.Get("/convert", r.handleConvertGet)
 	api.Post("/convert/batch", r.handleBatchConvert)
 	api.Post("/validate", r.handleValidate)
 
@@ -84,11 +84,11 @@ func (r *Router) SetupRoutes() {
 	api.Get("/health", r.handleHealth)
 	api.Get("/formats", r.handleFormats)
 
-    // Static routes
-    r.app.Get("/", r.handleRoot)
-    r.app.Get("/docs", r.handleDocs)
-    // Short alias for GET convert, convenient for clients (e.g., Clash)
-    r.app.Get("/sub", r.handleConvertGet)
+	// Static routes
+	r.app.Get("/", r.handleRoot)
+	r.app.Get("/docs", r.handleDocs)
+	// Short alias for GET convert, convenient for clients (e.g., Clash)
+	r.app.Get("/sub", r.handleConvertGet)
 }
 
 // handleConvert handles single conversion requests
@@ -122,93 +122,131 @@ func (r *Router) handleConvert(c *fiber.Ctx) error {
 // Example:
 // /api/v1/convert?target=clash&url=...&url=...&sort=1&udp=1&include=HK&exclude=TEST
 func (r *Router) handleConvertGet(c *fiber.Ctx) error {
-    target := c.Query("target")
-    if target == "" {
-        target = "clash" // default to Clash YAML for convenience
-    }
+	target := c.Query("target")
+	if target == "" {
+		target = "clash" // default to Clash YAML for convenience
+	}
 
-    // Collect URLs from repeated url params and from comma-separated urls
-    q := c.Context().QueryArgs()
-    urls := make([]string, 0)
-    // repeated url params
-    if vals := q.PeekMulti("url"); len(vals) > 0 {
-        for _, v := range vals {
-            if len(v) > 0 { urls = append(urls, string(v)) }
-        }
-    }
-    // single urls comma-separated
-    if s := c.Query("urls"); s != "" {
-        for _, u := range strings.Split(s, ",") {
-            u = strings.TrimSpace(u)
-            if u != "" { urls = append(urls, u) }
-        }
-    }
-    if len(urls) == 0 {
-        // allow single url param alias
-        if s := c.Query("url"); s != "" { urls = append(urls, s) }
-    }
-    if len(urls) == 0 {
-        return r.errorResponse(c, errors.BadRequest("INVALID_URLS", "at least one url is required"))
-    }
+	// Collect URLs from repeated url params and from comma-separated urls
+	q := c.Context().QueryArgs()
+	urls := make([]string, 0)
+	// repeated url params
+	if vals := q.PeekMulti("url"); len(vals) > 0 {
+		for _, v := range vals {
+			if len(v) > 0 {
+				urls = append(urls, string(v))
+			}
+		}
+	}
+	// single urls comma-separated
+	if s := c.Query("urls"); s != "" {
+		for _, u := range strings.Split(s, ",") {
+			u = strings.TrimSpace(u)
+			if u != "" {
+				urls = append(urls, u)
+			}
+		}
+	}
+	if len(urls) == 0 {
+		// allow single url param alias
+		if s := c.Query("url"); s != "" {
+			urls = append(urls, s)
+		}
+	}
+	if len(urls) == 0 {
+		return r.errorResponse(c, errors.BadRequest("INVALID_URLS", "at least one url is required"))
+	}
 
-    // Build options from query
-    opts := converter.Options{}
+	// Build options from query
+	opts := converter.Options{}
 
-    // include/exclude remarks
-    if vals := q.PeekMulti("include"); len(vals) > 0 { for _, v := range vals { opts.IncludeRemarks = append(opts.IncludeRemarks, string(v)) } }
-    if s := c.Query("include_remarks"); s != "" { opts.IncludeRemarks = append(opts.IncludeRemarks, strings.Split(s, ",")...) }
-    if vals := q.PeekMulti("exclude"); len(vals) > 0 { for _, v := range vals { opts.ExcludeRemarks = append(opts.ExcludeRemarks, string(v)) } }
-    if s := c.Query("exclude_remarks"); s != "" { opts.ExcludeRemarks = append(opts.ExcludeRemarks, strings.Split(s, ",")...) }
+	// include/exclude remarks
+	if vals := q.PeekMulti("include"); len(vals) > 0 {
+		for _, v := range vals {
+			opts.IncludeRemarks = append(opts.IncludeRemarks, string(v))
+		}
+	}
+	if s := c.Query("include_remarks"); s != "" {
+		opts.IncludeRemarks = append(opts.IncludeRemarks, strings.Split(s, ",")...)
+	}
+	if vals := q.PeekMulti("exclude"); len(vals) > 0 {
+		for _, v := range vals {
+			opts.ExcludeRemarks = append(opts.ExcludeRemarks, string(v))
+		}
+	}
+	if s := c.Query("exclude_remarks"); s != "" {
+		opts.ExcludeRemarks = append(opts.ExcludeRemarks, strings.Split(s, ",")...)
+	}
 
-    // sort / udp
-    if b := c.Query("sort"); b != "" { opts.Sort = isTruthy(b) }
-    if b := c.Query("udp"); b != "" { opts.UDP = isTruthy(b) }
+	// sort / udp
+	if b := c.Query("sort"); b != "" {
+		opts.Sort = isTruthy(b)
+	}
+	if b := c.Query("udp"); b != "" {
+		opts.UDP = isTruthy(b)
+	}
 
-    // rules
-    if vals := q.PeekMulti("rule"); len(vals) > 0 { for _, v := range vals { opts.Rules = append(opts.Rules, string(v)) } }
-    if s := c.Query("rules"); s != "" { opts.Rules = append(opts.Rules, strings.Split(s, ",")...) }
+	// rules
+	if vals := q.PeekMulti("rule"); len(vals) > 0 {
+		for _, v := range vals {
+			opts.Rules = append(opts.Rules, string(v))
+		}
+	}
+	if s := c.Query("rules"); s != "" {
+		opts.Rules = append(opts.Rules, strings.Split(s, ",")...)
+	}
 
-    // rename rules: rename=old->new (repeatable)
-    if vals := q.PeekMulti("rename"); len(vals) > 0 {
-        for _, v := range vals {
-            parts := strings.SplitN(string(v), "->", 2)
-            if len(parts) == 2 { opts.RenameRules = append(opts.RenameRules, generator.RenameRule{Match: parts[0], Replace: parts[1]}) }
-        }
-    }
-    // emoji rules: emoji=match:😊 (repeatable)
-    if vals := q.PeekMulti("emoji"); len(vals) > 0 {
-        for _, v := range vals {
-            parts := strings.SplitN(string(v), ":", 2)
-            if len(parts) == 2 { opts.EmojiRules = append(opts.EmojiRules, generator.EmojiRule{Match: parts[0], Emoji: parts[1]}) }
-        }
-    }
+	// rename rules: rename=old->new (repeatable)
+	if vals := q.PeekMulti("rename"); len(vals) > 0 {
+		for _, v := range vals {
+			parts := strings.SplitN(string(v), "->", 2)
+			if len(parts) == 2 {
+				opts.RenameRules = append(opts.RenameRules, generator.RenameRule{Match: parts[0], Replace: parts[1]})
+			}
+		}
+	}
+	// emoji rules: emoji=match:😊 (repeatable)
+	if vals := q.PeekMulti("emoji"); len(vals) > 0 {
+		for _, v := range vals {
+			parts := strings.SplitN(string(v), ":", 2)
+			if len(parts) == 2 {
+				opts.EmojiRules = append(opts.EmojiRules, generator.EmojiRule{Match: parts[0], Emoji: parts[1]})
+			}
+		}
+	}
 
-    // base template
-    if s := c.Query("base_template"); s != "" { opts.BaseTemplate = s }
-    if s := c.Query("base"); s != "" { opts.BaseTemplate = s }
+	// base template
+	if s := c.Query("base_template"); s != "" {
+		opts.BaseTemplate = s
+	}
+	if s := c.Query("base"); s != "" {
+		opts.BaseTemplate = s
+	}
 
-    // Build request and convert
-    req := converter.ConvertRequest{ Target: target, URLs: urls, Options: opts }
-    resp, err := r.service.Convert(c.Context(), &req)
-    if err != nil { return r.errorResponse(c, err) }
+	// Build request and convert
+	req := converter.ConvertRequest{Target: target, URLs: urls, Options: opts}
+	resp, err := r.service.Convert(c.Context(), &req)
+	if err != nil {
+		return r.errorResponse(c, err)
+	}
 
-    // Set content type and return
-    generator, exists := r.service.GeneratorManager().Get(target)
-    if !exists {
-        return r.errorResponse(c, fmt.Errorf("unsupported format: %s", target))
-    }
-    c.Set("Content-Type", generator.ContentType())
-    c.Set("Content-Disposition", fmt.Sprintf("attachment; filename=config.%s", target))
-    return c.SendString(resp.Config)
+	// Set content type and return
+	generator, exists := r.service.GeneratorManager().Get(target)
+	if !exists {
+		return r.errorResponse(c, fmt.Errorf("unsupported format: %s", target))
+	}
+	c.Set("Content-Type", generator.ContentType())
+	c.Set("Content-Disposition", fmt.Sprintf("attachment; filename=config.%s", target))
+	return c.SendString(resp.Config)
 }
 
 func isTruthy(s string) bool {
-    switch strings.ToLower(strings.TrimSpace(s)) {
-    case "1", "true", "yes", "on":
-        return true
-    default:
-        return false
-    }
+	switch strings.ToLower(strings.TrimSpace(s)) {
+	case "1", "true", "yes", "on":
+		return true
+	default:
+		return false
+	}
 }
 
 // handleBatchConvert handles batch conversion requests

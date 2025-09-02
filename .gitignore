@@ -1,0 +1,34 @@
+# 忽略所有文件
+*
+
+# 但保留以下文件和文件夹
+!.gitignore
+!README.md
+!go.mod
+!go.sum
+!Makefile
+!docker-compose.yml
+!Dockerfile
+!AGENTS.md
+!subscription_formats.md
+!base/
+!cmd/
+!configs/
+!docs/
+!internal/
+!k8s/
+
+# 保留 base 下的所有内容
+!base/**
+# 保留 bin 下的所有内容
+!bin/**
+# 保留 cmd 下的所有内容
+!cmd/**
+# 保留 configs 下的所有内容
+!configs/**
+# 保留 docs 下的所有内容
+!docs/**
+# 保留 internal 下的所有内容
+!internal/**
+# 保留 k8s 下的所有内容
+!k8s/**

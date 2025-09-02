@@ -4,34 +4,34 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/subconverter/subconverter-go/internal/domain/proxy"
-	"github.com/subconverter/subconverter-go/internal/domain/ruleset"
+	"github.com/rogeecn/subconverter-go/internal/domain/proxy"
+	"github.com/rogeecn/subconverter-go/internal/domain/ruleset"
 )
 
 // Generator defines the interface for generating configuration files
 type Generator interface {
 	// Generate creates a configuration file from proxies and rules
 	Generate(ctx context.Context, proxies []*proxy.Proxy, rulesets []*ruleset.RuleSet, options GenerateOptions) (string, error)
-	
+
 	// ContentType returns the MIME type of the generated configuration
 	ContentType() string
-	
+
 	// Format returns the format identifier
 	Format() string
 }
 
 // GenerateOptions contains options for configuration generation
 type GenerateOptions struct {
-	ProxyGroups    []ProxyGroup   `json:"proxy_groups"`
-	Rules          []string       `json:"rules"`
-	Template       string         `json:"template,omitempty"`
-	BaseTemplate   string         `json:"base_template,omitempty"`
-	RenameRules    []RenameRule   `json:"rename_rules,omitempty"`
-	EmojiRules     []EmojiRule    `json:"emoji_rules,omitempty"`
-	SortProxies    bool           `json:"sort_proxies"`
-	UDPEnabled     bool           `json:"udp_enabled"`
-	SkipFailed     bool           `json:"skip_failed"`
-	CustomOptions  map[string]interface{} `json:"custom_options,omitempty"`
+	ProxyGroups   []ProxyGroup           `json:"proxy_groups"`
+	Rules         []string               `json:"rules"`
+	Template      string                 `json:"template,omitempty"`
+	BaseTemplate  string                 `json:"base_template,omitempty"`
+	RenameRules   []RenameRule           `json:"rename_rules,omitempty"`
+	EmojiRules    []EmojiRule            `json:"emoji_rules,omitempty"`
+	SortProxies   bool                   `json:"sort_proxies"`
+	UDPEnabled    bool                   `json:"udp_enabled"`
+	SkipFailed    bool                   `json:"skip_failed"`
+	CustomOptions map[string]interface{} `json:"custom_options,omitempty"`
 }
 
 // ProxyGroup represents a proxy group configuration
@@ -96,6 +96,6 @@ func (m *Manager) Generate(ctx context.Context, format string, proxies []*proxy.
 	if !exists {
 		return "", fmt.Errorf("unsupported format: %s", format)
 	}
-	
+
 	return generator.Generate(ctx, proxies, rulesets, options)
 }

@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/redis/go-redis/v9"
-	"github.com/subconverter/subconverter-go/internal/app/converter"
-	"github.com/subconverter/subconverter-go/internal/infra/config"
-	"github.com/subconverter/subconverter-go/internal/pkg/logger"
+	"github.com/rogeecn/subconverter-go/internal/app/converter"
+	"github.com/rogeecn/subconverter-go/internal/infra/config"
+	"github.com/rogeecn/subconverter-go/internal/pkg/logger"
 )
 
 // Job represents a conversion job
@@ -34,8 +34,8 @@ type Queue interface {
 
 // MemoryQueue implements in-memory job queue
 type MemoryQueue struct {
-	queue    chan *Job
-	jobs     map[string]*Job
+	queue chan *Job
+	jobs  map[string]*Job
 }
 
 // NewMemoryQueue creates a new in-memory queue
@@ -50,9 +50,9 @@ func (q *MemoryQueue) Push(ctx context.Context, job *Job) error {
 	job.ID = generateJobID()
 	job.CreatedAt = time.Now()
 	job.Status = "pending"
-	
+
 	q.jobs[job.ID] = job
-	
+
 	select {
 	case q.queue <- job:
 		return nil
@@ -107,7 +107,7 @@ func NewRedisQueue(cfg config.RedisConfig) (*RedisQueue, error) {
 		Password: cfg.Password,
 		DB:       cfg.Database,
 	})
-	
+
 	return &RedisQueue{
 		client: client,
 		prefix: "subconverter:jobs:",
@@ -120,17 +120,17 @@ func (q *RedisQueue) Push(ctx context.Context, job *Job) error {
 	}
 	job.CreatedAt = time.Now()
 	job.Status = "pending"
-	
+
 	data, err := json.Marshal(job)
 	if err != nil {
 		return err
 	}
-	
+
 	pipe := q.client.Pipeline()
 	pipe.Set(ctx, q.prefix+job.ID, data, 24*time.Hour)
 	pipe.LPush(ctx, q.prefix+"queue", job.ID)
 	_, err = pipe.Exec(ctx)
-	
+
 	return err
 }
 
@@ -139,26 +139,26 @@ func (q *RedisQueue) Pop(ctx context.Context) (*Job, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	if len(result) < 2 {
 		return nil, nil
 	}
-	
+
 	jobID := result[1]
 	data, err := q.client.Get(ctx, q.prefix+jobID).Bytes()
 	if err != nil {
 		return nil, err
 	}
-	
+
 	var job Job
 	if err := json.Unmarshal(data, &job); err != nil {
 		return nil, err
 	}
-	
+
 	job.Status = "processing"
 	data, _ = json.Marshal(job)
 	q.client.Set(ctx, q.prefix+jobID, data, 24*time.Hour)
-	
+
 	return &job, nil
 }
 
@@ -167,16 +167,16 @@ func (q *RedisQueue) Complete(ctx context.Context, jobID string, result *convert
 	if err != nil {
 		return err
 	}
-	
+
 	var job Job
 	if err := json.Unmarshal(data, &job); err != nil {
 		return err
 	}
-	
+
 	job.Status = "completed"
 	job.Result = result
 	data, _ = json.Marshal(job)
-	
+
 	return q.client.Set(ctx, q.prefix+jobID, data, 24*time.Hour).Err()
 }
 
@@ -185,16 +185,16 @@ func (q *RedisQueue) Fail(ctx context.Context, jobID string, err error) error {
 	if err != nil {
 		return err
 	}
-	
+
 	var job Job
 	if err := json.Unmarshal(data, &job); err != nil {
 		return err
 	}
-	
+
 	job.Status = "failed"
 	job.Error = err.Error()
 	data, _ = json.Marshal(job)
-	
+
 	return q.client.Set(ctx, q.prefix+jobID, data, 24*time.Hour).Err()
 }
 
@@ -203,12 +203,12 @@ func (q *RedisQueue) Get(ctx context.Context, jobID string) (*Job, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	var job Job
 	if err := json.Unmarshal(data, &job); err != nil {
 		return nil, err
 	}
-	
+
 	return &job, nil
 }
 
@@ -231,20 +231,20 @@ func NewWorker(queue Queue, service *converter.Service, log logger.Logger) *Work
 // Start starts the worker
 func (w *Worker) Start(ctx context.Context, numWorkers int) error {
 	w.log.WithField("workers", numWorkers).Info("Starting worker pool")
-	
+
 	for i := 0; i < numWorkers; i++ {
 		go w.worker(ctx, i)
 	}
-	
+
 	<-ctx.Done()
 	w.log.Info("Worker pool shutting down")
-	
+
 	return nil
 }
 
 func (w *Worker) worker(ctx context.Context, id int) {
 	w.log.WithField("worker_id", id).Info("Worker started")
-	
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -258,12 +258,12 @@ func (w *Worker) worker(ctx context.Context, id int) {
 				}
 				continue
 			}
-			
+
 			if job == nil {
 				time.Sleep(1 * time.Second)
 				continue
 			}
-			
+
 			w.processJob(ctx, job)
 		}
 	}
@@ -274,21 +274,21 @@ func (w *Worker) processJob(ctx context.Context, job *Job) {
 		"job_id": job.ID,
 		"type":   job.Type,
 	}).Info("Processing job")
-	
+
 	result, err := w.service.Convert(ctx, &job.Request)
 	if err != nil {
 		w.log.WithError(err).Error("Job failed")
 		w.queue.Fail(ctx, job.ID, err)
 		return
 	}
-	
+
 	if err := w.queue.Complete(ctx, job.ID, result); err != nil {
 		w.log.WithError(err).Error("Failed to complete job")
 		return
 	}
-	
+
 	w.log.WithFields(map[string]interface{}{
-		"job_id": job.ID,
+		"job_id":  job.ID,
 		"proxies": len(result.Proxies),
 	}).Info("Job completed")
 }

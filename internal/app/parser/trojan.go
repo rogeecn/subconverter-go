@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/subconverter/subconverter-go/internal/domain/proxy"
+	"github.com/rogeecn/subconverter-go/internal/domain/proxy"
 )
 
 type TrojanParser struct{}

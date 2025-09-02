@@ -9,16 +9,16 @@ import (
 	"sync"
 	"time"
 
+	"github.com/rogeecn/subconverter-go/internal/app/generator"
+	"github.com/rogeecn/subconverter-go/internal/app/parser"
+	"github.com/rogeecn/subconverter-go/internal/app/template"
+	"github.com/rogeecn/subconverter-go/internal/domain/proxy"
+	"github.com/rogeecn/subconverter-go/internal/infra/cache"
+	"github.com/rogeecn/subconverter-go/internal/infra/config"
+	"github.com/rogeecn/subconverter-go/internal/infra/http"
+	"github.com/rogeecn/subconverter-go/internal/pkg/errors"
+	"github.com/rogeecn/subconverter-go/internal/pkg/logger"
 	"github.com/samber/lo"
-	"github.com/subconverter/subconverter-go/internal/app/generator"
-	"github.com/subconverter/subconverter-go/internal/app/parser"
-	"github.com/subconverter/subconverter-go/internal/app/template"
-	"github.com/subconverter/subconverter-go/internal/domain/proxy"
-	"github.com/subconverter/subconverter-go/internal/infra/cache"
-	"github.com/subconverter/subconverter-go/internal/infra/config"
-	"github.com/subconverter/subconverter-go/internal/infra/http"
-	"github.com/subconverter/subconverter-go/internal/pkg/errors"
-	"github.com/subconverter/subconverter-go/internal/pkg/logger"
 )
 
 // Service provides the core conversion functionality
@@ -35,7 +35,7 @@ type Service struct {
 // NewService creates a new conversion service
 func NewService(cfg *config.Config, log *logger.Logger) *Service {
 	templateManager := template.NewManager(cfg.Generator.TemplatesDir, cfg.Generator.RulesDir, *log)
-	
+
 	return &Service{
 		parserManager:    parser.NewManager(),
 		generatorManager: generator.NewManager(),
@@ -52,9 +52,9 @@ func (s *Service) Convert(ctx context.Context, req *ConvertRequest) (*ConvertRes
 	start := time.Now()
 	defer func() {
 		s.logger.WithFields(map[string]interface{}{
-			"target":    req.Target,
-			"urls":      len(req.URLs),
-			"duration":  time.Since(start),
+			"target":   req.Target,
+			"urls":     len(req.URLs),
+			"duration": time.Since(start),
 		}).Info("Conversion completed")
 	}()
 
@@ -126,13 +126,13 @@ func (s *Service) Convert(ctx context.Context, req *ConvertRequest) (*ConvertRes
 	genStart := time.Now()
 	s.logger.WithFields(map[string]interface{}{"target": req.Target, "proxies": len(filteredProxies)}).Info("Generating configuration")
 	config, err := s.generatorManager.Generate(ctx, req.Target, filteredProxies, nil, generator.GenerateOptions{
-		ProxyGroups:   s.buildProxyGroups(req.Options),
-		Rules:         req.Options.Rules,
-		SortProxies:   req.Options.Sort,
-		UDPEnabled:    req.Options.UDP,
-		RenameRules:   req.Options.RenameRules,
-		EmojiRules:    req.Options.EmojiRules,
-		BaseTemplate:  req.Options.BaseTemplate,
+		ProxyGroups:  s.buildProxyGroups(req.Options),
+		Rules:        req.Options.Rules,
+		SortProxies:  req.Options.Sort,
+		UDPEnabled:   req.Options.UDP,
+		RenameRules:  req.Options.RenameRules,
+		EmojiRules:   req.Options.EmojiRules,
+		BaseTemplate: req.Options.BaseTemplate,
 	})
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to generate configuration")
@@ -201,30 +201,30 @@ func (s *Service) GetInfo(ctx context.Context) (*InfoResponse, error) {
 }
 
 func (s *Service) detectFormat(content string) string {
-    // Simple format detection based on content patterns
-    // Check more specific schemes first to avoid substring conflicts (e.g., vmess contains 'ss')
-    if strings.Contains(content, "vmess://") {
-        return "vmess"
-    }
-    if strings.Contains(content, "trojan://") {
-        return "trojan"
-    }
-    if strings.Contains(content, "vless://") {
-        return "vless"
-    }
-    if strings.Contains(content, "hysteria://") {
-        return "hysteria"
-    }
-    if strings.Contains(content, "hysteria2://") {
-        return "hysteria2"
-    }
-    if strings.Contains(content, "snell://") {
-        return "snell"
-    }
-    if strings.Contains(content, "ss://") || strings.Contains(content, "ssr://") {
-        return "shadowsocks"
-    }
-    return "unknown"
+	// Simple format detection based on content patterns
+	// Check more specific schemes first to avoid substring conflicts (e.g., vmess contains 'ss')
+	if strings.Contains(content, "vmess://") {
+		return "vmess"
+	}
+	if strings.Contains(content, "trojan://") {
+		return "trojan"
+	}
+	if strings.Contains(content, "vless://") {
+		return "vless"
+	}
+	if strings.Contains(content, "hysteria://") {
+		return "hysteria"
+	}
+	if strings.Contains(content, "hysteria2://") {
+		return "hysteria2"
+	}
+	if strings.Contains(content, "snell://") {
+		return "snell"
+	}
+	if strings.Contains(content, "ss://") || strings.Contains(content, "ssr://") {
+		return "shadowsocks"
+	}
+	return "unknown"
 }
 
 // Health checks the service health
@@ -243,16 +243,16 @@ func (s *Service) Health(ctx context.Context) error {
 }
 
 func (s *Service) validateRequest(req *ConvertRequest) error {
-    if req.Target == "" {
-        return errors.BadRequest("INVALID_TARGET", "target format is required")
-    }
+	if req.Target == "" {
+		return errors.BadRequest("INVALID_TARGET", "target format is required")
+	}
 
-    // Check if target format is supported
-    if _, exists := s.generatorManager.Get(req.Target); !exists {
-        return errors.BadRequest("UNSUPPORTED_TARGET", fmt.Sprintf("target format '%s' is not supported", req.Target))
-    }
+	// Check if target format is supported
+	if _, exists := s.generatorManager.Get(req.Target); !exists {
+		return errors.BadRequest("UNSUPPORTED_TARGET", fmt.Sprintf("target format '%s' is not supported", req.Target))
+	}
 
-    return nil
+	return nil
 }
 
 func (s *Service) fetchSubscriptions(ctx context.Context, urls []string) ([]*proxy.Proxy, error) {

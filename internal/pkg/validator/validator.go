@@ -4,14 +4,14 @@ import (
 	"strings"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/subconverter/subconverter-go/internal/pkg/errors"
+	"github.com/rogeecn/subconverter-go/internal/pkg/errors"
 )
 
 var validate *validator.Validate
 
 func init() {
 	validate = validator.New()
-	
+
 	// 自定义验证器
 	validate.RegisterValidation("url", func(fl validator.FieldLevel) bool {
 		value := fl.Field().String()
@@ -20,7 +20,7 @@ func init() {
 		}
 		return strings.HasPrefix(value, "http://") || strings.HasPrefix(value, "https://")
 	})
-	
+
 	validate.RegisterValidation("proxy_type", func(fl validator.FieldLevel) bool {
 		value := fl.Field().String()
 		validTypes := map[string]bool{

@@ -7,16 +7,16 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/rogeecn/subconverter-go/internal/app/converter"
+	"github.com/rogeecn/subconverter-go/internal/infra/config"
+	"github.com/rogeecn/subconverter-go/internal/infra/queue"
+	"github.com/rogeecn/subconverter-go/internal/pkg/logger"
 	"github.com/spf13/cobra"
-	"github.com/subconverter/subconverter-go/internal/app/converter"
-	"github.com/subconverter/subconverter-go/internal/infra/config"
-	"github.com/subconverter/subconverter-go/internal/infra/queue"
-	"github.com/subconverter/subconverter-go/internal/pkg/logger"
 )
 
 var (
-	cfgFile string
-	workers int
+	cfgFile   string
+	workers   int
 	queueType string
 )
 

@@ -3,8 +3,8 @@ package subscription
 import (
 	"time"
 
-	"github.com/subconverter/subconverter-go/internal/domain/proxy"
-	"github.com/subconverter/subconverter-go/internal/domain/ruleset"
+	"github.com/rogeecn/subconverter-go/internal/domain/proxy"
+	"github.com/rogeecn/subconverter-go/internal/domain/ruleset"
 )
 
 type Status string
@@ -17,17 +17,17 @@ const (
 )
 
 type Subscription struct {
-	ID          string            `json:"id" yaml:"id"`
-	Name        string            `json:"name" yaml:"name"`
-	URL         string            `json:"url" yaml:"url"`
-	Description string            `json:"description,omitempty" yaml:"description,omitempty"`
-	Status      Status            `json:"status" yaml:"status"`
-	Proxies     []*proxy.Proxy    `json:"proxies" yaml:"proxies"`
+	ID          string             `json:"id" yaml:"id"`
+	Name        string             `json:"name" yaml:"name"`
+	URL         string             `json:"url" yaml:"url"`
+	Description string             `json:"description,omitempty" yaml:"description,omitempty"`
+	Status      Status             `json:"status" yaml:"status"`
+	Proxies     []*proxy.Proxy     `json:"proxies" yaml:"proxies"`
 	RuleSets    []*ruleset.RuleSet `json:"rule_sets,omitempty" yaml:"rule_sets,omitempty"`
-	CreatedAt   time.Time         `json:"created_at" yaml:"created_at"`
-	UpdatedAt   time.Time         `json:"updated_at" yaml:"updated_at"`
-	ExpiresAt   *time.Time        `json:"expires_at,omitempty" yaml:"expires_at,omitempty"`
-	Metadata    map[string]string `json:"metadata,omitempty" yaml:"metadata,omitempty"`
+	CreatedAt   time.Time          `json:"created_at" yaml:"created_at"`
+	UpdatedAt   time.Time          `json:"updated_at" yaml:"updated_at"`
+	ExpiresAt   *time.Time         `json:"expires_at,omitempty" yaml:"expires_at,omitempty"`
+	Metadata    map[string]string  `json:"metadata,omitempty" yaml:"metadata,omitempty"`
 }
 
 type SubscriptionRequest struct {
@@ -38,22 +38,22 @@ type SubscriptionRequest struct {
 }
 
 type SubscriptionResponse struct {
-	ID          string    `json:"id"`
-	Name        string    `json:"name"`
-	URL         string    `json:"url"`
-	Description string    `json:"description,omitempty"`
-	Status      Status    `json:"status"`
-	ProxyCount  int       `json:"proxy_count"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	ID          string     `json:"id"`
+	Name        string     `json:"name"`
+	URL         string     `json:"url"`
+	Description string     `json:"description,omitempty"`
+	Status      Status     `json:"status"`
+	ProxyCount  int        `json:"proxy_count"`
+	CreatedAt   time.Time  `json:"created_at"`
+	UpdatedAt   time.Time  `json:"updated_at"`
 	ExpiresAt   *time.Time `json:"expires_at,omitempty"`
 }
 
 type UpdateRequest struct {
-	Name        *string            `json:"name,omitempty"`
-	Description *string            `json:"description,omitempty"`
-	Metadata    map[string]string  `json:"metadata,omitempty"`
-	RuleSets    []string           `json:"rule_sets,omitempty"`
+	Name        *string           `json:"name,omitempty"`
+	Description *string           `json:"description,omitempty"`
+	Metadata    map[string]string `json:"metadata,omitempty"`
+	RuleSets    []string          `json:"rule_sets,omitempty"`
 }
 
 type FilterOptions struct {
@@ -69,8 +69,8 @@ type FilterOptions struct {
 }
 
 type Statistics struct {
-	TotalSubscriptions int64     `json:"total_subscriptions"`
-	TotalProxies       int64     `json:"total_proxies"`
-	ActiveSubscriptions int64    `json:"active_subscriptions"`
-	LastUpdate         time.Time `json:"last_update"`
+	TotalSubscriptions  int64     `json:"total_subscriptions"`
+	TotalProxies        int64     `json:"total_proxies"`
+	ActiveSubscriptions int64     `json:"active_subscriptions"`
+	LastUpdate          time.Time `json:"last_update"`
 }

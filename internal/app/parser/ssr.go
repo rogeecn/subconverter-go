@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/subconverter/subconverter-go/internal/domain/proxy"
+	"github.com/rogeecn/subconverter-go/internal/domain/proxy"
 )
 
 type SSRParser struct{}
@@ -32,7 +32,7 @@ func (p *SSRParser) Parse(ctx context.Context, content string) ([]*proxy.Proxy, 
 
 	// Remove the ssr:// prefix
 	content = strings.TrimPrefix(content, "ssr://")
-	
+
 	// Decode base64
 	decoded, err := base64.RawURLEncoding.DecodeString(content)
 	if err != nil {
@@ -84,14 +84,14 @@ func (p *SSRParser) Parse(ctx context.Context, content string) ([]*proxy.Proxy, 
 			if len(kv) == 2 {
 				key := kv[0]
 				value := kv[1]
-				
+
 				// Decode parameter values
 				if decoded, err := base64.RawURLEncoding.DecodeString(value); err == nil {
 					value = string(decoded)
 				} else if decoded, err := base64.StdEncoding.DecodeString(value); err == nil {
 					value = string(decoded)
 				}
-				
+
 				params[key] = value
 			}
 		}

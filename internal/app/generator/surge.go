@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/subconverter/subconverter-go/internal/domain/proxy"
-	"github.com/subconverter/subconverter-go/internal/domain/ruleset"
+	"github.com/rogeecn/subconverter-go/internal/domain/proxy"
+	"github.com/rogeecn/subconverter-go/internal/domain/ruleset"
 )
 
 type SurgeGenerator struct{}
@@ -25,16 +25,16 @@ func (g *SurgeGenerator) ContentType() string {
 
 func (g *SurgeGenerator) Generate(ctx context.Context, proxies []*proxy.Proxy, rulesets []*ruleset.RuleSet, options GenerateOptions) (string, error) {
 	var builder strings.Builder
-	
+
 	// Header
 	builder.WriteString("#!MANAGED-CONFIG https://example.com interval=86400 strict=false\n\n")
-	
+
 	// General section
 	builder.WriteString("[General]\n")
 	builder.WriteString("loglevel = notify\n")
 	builder.WriteString("dns-server = 8.8.8.8, 1.1.1.1\n")
 	builder.WriteString("skip-proxy = 127.0.0.1, 192.168.0.0/16\n\n")
-	
+
 	// Proxy section
 	builder.WriteString("[Proxy]\n")
 	for _, proxy := range proxies {
@@ -43,7 +43,7 @@ func (g *SurgeGenerator) Generate(ctx context.Context, proxies []*proxy.Proxy, r
 		builder.WriteString("\n")
 	}
 	builder.WriteString("\n")
-	
+
 	// Proxy Group section
 	builder.WriteString("[Proxy Group]\n")
 	for _, group := range options.ProxyGroups {
@@ -52,7 +52,7 @@ func (g *SurgeGenerator) Generate(ctx context.Context, proxies []*proxy.Proxy, r
 		builder.WriteString("\n")
 	}
 	builder.WriteString("\n")
-	
+
 	// Rule section
 	builder.WriteString("[Rule]\n")
 	for _, ruleset := range rulesets {
@@ -65,16 +65,16 @@ func (g *SurgeGenerator) Generate(ctx context.Context, proxies []*proxy.Proxy, r
 			builder.WriteString("\n")
 		}
 	}
-	
+
 	// Add default rule
 	builder.WriteString("FINAL,DIRECT\n")
-	
+
 	return builder.String(), nil
 }
 
 func (g *SurgeGenerator) buildProxyLine(proxy *proxy.Proxy) string {
 	var parts []string
-	
+
 	switch proxy.Type {
 	case "ss":
 		parts = []string{
@@ -108,7 +108,7 @@ func (g *SurgeGenerator) buildProxyLine(proxy *proxy.Proxy) string {
 	default:
 		return fmt.Sprintf("# Unsupported proxy type: %s", proxy.Type)
 	}
-	
+
 	return strings.Join(parts, " = ")
 }
 
@@ -116,14 +116,14 @@ func (g *SurgeGenerator) buildProxyGroupLine(group ProxyGroup) string {
 	var parts []string
 	parts = append(parts, group.Name)
 	parts = append(parts, "=", group.Type)
-	
+
 	if group.URL != "" {
 		parts = append(parts, "url="+group.URL)
 	}
 	if group.Interval > 0 {
 		parts = append(parts, fmt.Sprintf("interval=%d", group.Interval))
 	}
-	
+
 	parts = append(parts, group.Proxies...)
 	return strings.Join(parts, ", ")
 }

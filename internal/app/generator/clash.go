@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"strings"
 
-	"gopkg.in/yaml.v3"
+	"github.com/rogeecn/subconverter-go/internal/app/template"
+	"github.com/rogeecn/subconverter-go/internal/domain/proxy"
+	"github.com/rogeecn/subconverter-go/internal/domain/ruleset"
 	"github.com/samber/lo"
-	"github.com/subconverter/subconverter-go/internal/app/template"
-	"github.com/subconverter/subconverter-go/internal/domain/proxy"
-	"github.com/subconverter/subconverter-go/internal/domain/ruleset"
+	"gopkg.in/yaml.v3"
 )
 
-type ClashGenerator struct{
+type ClashGenerator struct {
 	templateManager *template.Manager
 }
 
@@ -34,9 +34,9 @@ func (g *ClashGenerator) Generate(ctx context.Context, proxies []*proxy.Proxy, r
 	// Load base template if specified
 	if options.BaseTemplate != "" && g.templateManager != nil {
 		templateData, err := g.templateManager.RenderTemplate(ctx, options.BaseTemplate, map[string]interface{}{
-			"proxies": proxies,
+			"proxies":  proxies,
 			"rulesets": rulesets,
-			"options": options,
+			"options":  options,
 		})
 		if err == nil {
 			return templateData, nil
@@ -44,45 +44,45 @@ func (g *ClashGenerator) Generate(ctx context.Context, proxies []*proxy.Proxy, r
 	}
 
 	config := make(map[string]interface{})
-	
+
 	// Process proxies
 	clashProxies := g.buildProxies(proxies)
-	
+
 	// Process proxy groups
 	clashProxyGroups := g.buildProxyGroups(options.ProxyGroups, proxies)
-	
+
 	// Process rules
 	clashRules := g.buildRules(rulesets, options.Rules)
-	
+
 	// Build configuration
 	config["proxies"] = clashProxies
 	config["proxy-groups"] = clashProxyGroups
 	config["rules"] = clashRules
-	
+
 	// Add custom options
 	for k, v := range options.CustomOptions {
 		config[k] = v
 	}
-	
+
 	data, err := yaml.Marshal(config)
 	if err != nil {
 		return "", fmt.Errorf("failed to marshal YAML: %v", err)
 	}
-	
+
 	return string(data), nil
 }
 
 func (g *ClashGenerator) buildProxies(proxies []*proxy.Proxy) []map[string]interface{} {
 	result := make([]map[string]interface{}, 0, len(proxies))
-	
+
 	for _, p := range proxies {
 		proxyMap := make(map[string]interface{})
-		
+
 		proxyMap["name"] = p.Name
 		proxyMap["type"] = string(p.Type)
 		proxyMap["server"] = p.Server
 		proxyMap["port"] = p.Port
-		
+
 		switch p.Type {
 		case "ss":
 			proxyMap["cipher"] = p.Method
@@ -93,7 +93,7 @@ func (g *ClashGenerator) buildProxies(proxies []*proxy.Proxy) []map[string]inter
 					proxyMap["plugin-opts"] = parsePluginOpts(p.PluginOpts)
 				}
 			}
-			
+
 		case "ssr":
 			proxyMap["cipher"] = p.Method
 			proxyMap["password"] = p.Password
@@ -105,7 +105,7 @@ func (g *ClashGenerator) buildProxies(proxies []*proxy.Proxy) []map[string]inter
 			if p.ObfsParam != "" {
 				proxyMap["obfs-param"] = p.ObfsParam
 			}
-			
+
 		case "vmess":
 			proxyMap["uuid"] = p.UUID
 			proxyMap["alterId"] = p.AID
@@ -130,41 +130,49 @@ func (g *ClashGenerator) buildProxies(proxies []*proxy.Proxy) []map[string]inter
 					},
 				}
 			}
-			
-	case "vless":
-		proxyMap["uuid"] = p.UUID
-		if p.Flow != "" {
-			proxyMap["flow"] = p.Flow
-		}
-		if p.TLS != proxy.TLSNone {
-			proxyMap["tls"] = true
-			if p.SNI != "" {
-				proxyMap["servername"] = p.SNI
+
+		case "vless":
+			proxyMap["uuid"] = p.UUID
+			if p.Flow != "" {
+				proxyMap["flow"] = p.Flow
 			}
-			if p.SkipCertVerify {
-				proxyMap["skip-cert-verify"] = true
+			if p.TLS != proxy.TLSNone {
+				proxyMap["tls"] = true
+				if p.SNI != "" {
+					proxyMap["servername"] = p.SNI
+				}
+				if p.SkipCertVerify {
+					proxyMap["skip-cert-verify"] = true
+				}
 			}
-		}
-		if p.Path != "" || p.Host != "" {
-			proxyMap["network"] = "ws"
-			proxyMap["ws-opts"] = map[string]interface{}{
-				"path": p.Path,
-				"headers": map[string]string{
-					"Host": p.Host,
-				},
+			if p.Path != "" || p.Host != "" {
+				proxyMap["network"] = "ws"
+				proxyMap["ws-opts"] = map[string]interface{}{
+					"path": p.Path,
+					"headers": map[string]string{
+						"Host": p.Host,
+					},
+				}
 			}
-		}
-		if strings.EqualFold(p.Security, "reality") || p.RealityPublicKey != "" || p.RealityShortID != "" || p.RealitySpiderX != "" || p.ClientFingerprint != "" {
-			if p.ClientFingerprint != "" { proxyMap["client-fingerprint"] = p.ClientFingerprint }
-			reality := map[string]interface{}{}
-			if p.RealityPublicKey != "" { reality["public-key"] = p.RealityPublicKey }
-			if p.RealityShortID != "" { reality["short-id"] = p.RealityShortID }
-			if p.RealitySpiderX != "" { reality["spider-x"] = p.RealitySpiderX }
-			if len(reality) > 0 {
-				proxyMap["reality-opts"] = reality
+			if strings.EqualFold(p.Security, "reality") || p.RealityPublicKey != "" || p.RealityShortID != "" || p.RealitySpiderX != "" || p.ClientFingerprint != "" {
+				if p.ClientFingerprint != "" {
+					proxyMap["client-fingerprint"] = p.ClientFingerprint
+				}
+				reality := map[string]interface{}{}
+				if p.RealityPublicKey != "" {
+					reality["public-key"] = p.RealityPublicKey
+				}
+				if p.RealityShortID != "" {
+					reality["short-id"] = p.RealityShortID
+				}
+				if p.RealitySpiderX != "" {
+					reality["spider-x"] = p.RealitySpiderX
+				}
+				if len(reality) > 0 {
+					proxyMap["reality-opts"] = reality
+				}
 			}
-		}
-			
+
 		case "trojan":
 			proxyMap["password"] = p.Password
 			if p.SNI != "" {
@@ -173,7 +181,7 @@ func (g *ClashGenerator) buildProxies(proxies []*proxy.Proxy) []map[string]inter
 			if p.SkipCertVerify {
 				proxyMap["skip-cert-verify"] = true
 			}
-			
+
 		case "hysteria":
 			proxyMap["auth"] = p.Password
 			proxyMap["up"] = fmt.Sprintf("%d Mbps", p.UpMbps)
@@ -184,23 +192,23 @@ func (g *ClashGenerator) buildProxies(proxies []*proxy.Proxy) []map[string]inter
 			if p.SkipCertVerify {
 				proxyMap["skip-cert-verify"] = true
 			}
-			
-	case "hysteria2":
-		proxyMap["password"] = p.Password
-		if p.SNI != "" {
-			proxyMap["sni"] = p.SNI
-		}
-		if p.SkipCertVerify {
-			proxyMap["skip-cert-verify"] = true
-		}
-		if len(p.Alpn) > 0 {
-			proxyMap["alpn"] = p.Alpn
-		}
-			
+
+		case "hysteria2":
+			proxyMap["password"] = p.Password
+			if p.SNI != "" {
+				proxyMap["sni"] = p.SNI
+			}
+			if p.SkipCertVerify {
+				proxyMap["skip-cert-verify"] = true
+			}
+			if len(p.Alpn) > 0 {
+				proxyMap["alpn"] = p.Alpn
+			}
+
 		case "snell":
 			proxyMap["psk"] = p.Password
 			proxyMap["version"] = 3
-			
+
 		case "http", "https":
 			proxyMap["username"] = p.Username
 			proxyMap["password"] = p.Password
@@ -211,20 +219,20 @@ func (g *ClashGenerator) buildProxies(proxies []*proxy.Proxy) []map[string]inter
 				}
 			}
 		}
-		
+
 		if p.UDP {
 			proxyMap["udp"] = true
 		}
-		
+
 		result = append(result, proxyMap)
 	}
-	
+
 	return result
 }
 
 func (g *ClashGenerator) buildProxyGroups(groups []ProxyGroup, proxies []*proxy.Proxy) []map[string]interface{} {
 	result := make([]map[string]interface{}, 0, len(groups))
-	
+
 	// Default groups if none provided
 	if len(groups) == 0 {
 		groups = []ProxyGroup{
@@ -234,38 +242,38 @@ func (g *ClashGenerator) buildProxyGroups(groups []ProxyGroup, proxies []*proxy.
 				Proxies: []string{"♻️ 自动选择", "🔯 故障转移", "DIRECT"},
 			},
 			{
-				Name:    "♻️ 自动选择",
-				Type:    "url-test",
-				Proxies: []string{},
-				URL:     "http://www.gstatic.com/generate_204",
+				Name:     "♻️ 自动选择",
+				Type:     "url-test",
+				Proxies:  []string{},
+				URL:      "http://www.gstatic.com/generate_204",
 				Interval: 300,
 			},
 			{
-				Name:    "🔯 故障转移",
-				Type:    "fallback",
-				Proxies: []string{},
-				URL:     "http://www.gstatic.com/generate_204",
+				Name:     "🔯 故障转移",
+				Type:     "fallback",
+				Proxies:  []string{},
+				URL:      "http://www.gstatic.com/generate_204",
 				Interval: 300,
 			},
 		}
 	}
-	
+
 	// Build proxy names list
 	proxyNames := lo.Map(proxies, func(p *proxy.Proxy, _ int) string {
 		return p.Name
 	})
-	
+
 	for _, group := range groups {
 		groupMap := make(map[string]interface{})
 		groupMap["name"] = group.Name
 		groupMap["type"] = group.Type
-		
+
 		// Build proxies list
 		proxiesList := make([]string, 0)
 		if len(group.Proxies) > 0 {
 			proxiesList = append(proxiesList, group.Proxies...)
 		}
-		
+
 		// Apply filter if specified
 		if group.Filter != "" {
 			filtered := lo.Filter(proxyNames, func(name string, _ int) bool {
@@ -275,9 +283,9 @@ func (g *ClashGenerator) buildProxyGroups(groups []ProxyGroup, proxies []*proxy.
 		} else {
 			proxiesList = append(proxiesList, proxyNames...)
 		}
-		
+
 		groupMap["proxies"] = proxiesList
-		
+
 		if group.URL != "" {
 			groupMap["url"] = group.URL
 		}
@@ -287,16 +295,16 @@ func (g *ClashGenerator) buildProxyGroups(groups []ProxyGroup, proxies []*proxy.
 		if group.Tolerance > 0 {
 			groupMap["tolerance"] = group.Tolerance
 		}
-		
+
 		result = append(result, groupMap)
 	}
-	
+
 	return result
 }
 
 func (g *ClashGenerator) buildRules(rulesets []*ruleset.RuleSet, customRules []string) []string {
 	result := make([]string, 0)
-	
+
 	// Add rules from rulesets
 	for _, ruleset := range rulesets {
 		if !ruleset.Enabled {
@@ -309,15 +317,15 @@ func (g *ClashGenerator) buildRules(rulesets []*ruleset.RuleSet, customRules []s
 			}
 		}
 	}
-	
+
 	// Add custom rules
 	result = append(result, customRules...)
-	
+
 	// Add default rule
 	if len(result) == 0 {
 		result = append(result, "MATCH,DIRECT")
 	}
-	
+
 	return result
 }
 

@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/rogeecn/subconverter-go/internal/app/converter"
+	"github.com/rogeecn/subconverter-go/internal/infra/config"
+	"github.com/rogeecn/subconverter-go/internal/pkg/logger"
 	"github.com/spf13/cobra"
-	"github.com/subconverter/subconverter-go/internal/app/converter"
-	"github.com/subconverter/subconverter-go/internal/infra/config"
-	"github.com/subconverter/subconverter-go/internal/pkg/logger"
 )
 
 var (
@@ -73,7 +73,7 @@ func initConfig() {
 
 func runConvert(cmd *cobra.Command, args []string) {
 	cfg := config.Load()
-	
+
 	log := logger.New(logger.Config{
 		Level:  logLevel,
 		Format: logFormat,
@@ -98,8 +98,8 @@ func runConvert(cmd *cobra.Command, args []string) {
 		Options: converter.Options{
 			IncludeRemarks: include,
 			ExcludeRemarks: exclude,
-			UDP:           udp,
-			Sort:          sort,
+			UDP:            udp,
+			Sort:           sort,
 		},
 	}
 
@@ -109,7 +109,7 @@ func runConvert(cmd *cobra.Command, args []string) {
 	}
 
 	if output != "" {
-		if err := os.WriteFile(output, []byte(resp.Config), 0644); err != nil {
+		if err := os.WriteFile(output, []byte(resp.Config), 0o644); err != nil {
 			log.WithError(err).Fatal("Failed to write output file")
 		}
 		log.Infof("Configuration saved to %s", output)

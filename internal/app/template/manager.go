@@ -8,8 +8,8 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/subconverter/subconverter-go/internal/pkg/errors"
-	"github.com/subconverter/subconverter-go/internal/pkg/logger"
+	"github.com/rogeecn/subconverter-go/internal/pkg/errors"
+	"github.com/rogeecn/subconverter-go/internal/pkg/logger"
 )
 
 // TemplateManager manages template loading and rendering
@@ -136,7 +136,6 @@ func (m *Manager) ListRules(ctx context.Context) ([]string, error) {
 
 		return nil
 	})
-
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to list rules")
 	}

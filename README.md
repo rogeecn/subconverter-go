@@ -1,15 +1,15 @@
 # SubConverter Go
 
-SubConverter的Go语言版本实现，提供高性能的代理订阅转换服务。
+SubConverter 的 Go 语言版本实现，提供高性能的代理订阅转换服务。
 
 ## 特性
 
-- **高性能**: 基于Go语言的高并发处理能力
-- **多协议支持**: 支持SS、SSR、VMess、Trojan、Hysteria等主流协议
-- **多格式输出**: 支持Clash、Surge、Quantumult、Loon等格式
-- **云原生**: 支持容器化部署，Kubernetes友好
-- **缓存支持**: 内置Redis缓存，提升响应速度
-- **API友好**: RESTful API设计，支持批量处理
+- **高性能**: 基于 Go 语言的高并发处理能力
+- **多协议支持**: 支持 SS、SSR、VMess、Trojan、Hysteria 等主流协议
+- **多格式输出**: 支持 Clash、Surge、Quantumult、Loon 等格式
+- **云原生**: 支持容器化部署，Kubernetes 友好
+- **缓存支持**: 内置 Redis 缓存，提升响应速度
+- **API 友好**: RESTful API 设计，支持批量处理
 
 ## 快速开始
 
@@ -17,7 +17,7 @@ SubConverter的Go语言版本实现，提供高性能的代理订阅转换服务
 
 ```bash
 # 克隆项目
-git clone https://github.com/subconverter/subconverter-go.git
+git clone https://github.com/rogeecn/subconverter-go.git
 cd subconverter-go
 
 # 安装依赖
@@ -40,7 +40,7 @@ go build -o subconverter cmd/subconverter/main.go
 ./subconverter --port 8080
 ```
 
-### Docker运行
+### Docker 运行
 
 ```bash
 # 构建镜像
@@ -50,7 +50,7 @@ docker build -t subconverter-go .
 docker run -p 8080:8080 subconverter-go
 ```
 
-## API使用
+## API 使用
 
 ### 转换订阅
 
@@ -88,7 +88,6 @@ http://localhost:8080/api/v1/convert?url=https://a/sub&include=HK&include=JP&ren
 # 简写别名（等价 /api/v1/convert）
 http://localhost:8080/sub?url=https://a/sub&url=https://b/sub
 ```
-
 
 ### 配置额外独立节点（与订阅合并）
 
@@ -136,6 +135,7 @@ curl http://localhost:8080/api/v1/health
 ### 客户端示例（Clash / Surge / Quantumult X / Loon）
 
 - Clash / Clash.Meta（推荐）
+
   - 路径：Settings → Profiles → New Profile（URL）
   - 示例：
     - `http://<host>:8080/sub?url=https://a.example/sub&url=https://b.example/sub`
@@ -143,17 +143,20 @@ curl http://localhost:8080/api/v1/health
   - 提示：支持别名 `/sub`，与 `/api/v1/convert` 等价。
 
 - Surge（iOS/macOS）
+
   - 路径：Profile → Install from URL（或在已有配置中使用远程片段）
   - 示例（整份配置）：
     - `http://<host>:8080/api/v1/convert?target=surge&url=https://a.example/sub`
   - 若只想生成节点片段，可在规则侧另行合并（取决于现有配置结构）。
 
 - Quantumult X（iOS）
+
   - 路径：Settings → Configuration → Download Configuration（或 Servers 导入远程）
   - 示例：
     - `http://<host>:8080/api/v1/convert?target=quantumult&url=https://a.example/sub`
 
 - Loon（iOS）
+
   - 路径：Configuration → Remote（或从 URL 导入）
   - 示例：
     - `http://<host>:8080/api/v1/convert?target=loon&url=https://a.example/sub`
@@ -164,10 +167,9 @@ curl http://localhost:8080/api/v1/health
 
 > 说明：不同客户端的“从 URL 导入/远程配置”入口名称略有差异，请以客户端当前版本实际界面为准。URL 参数可与前文一致（include/exclude/rename/emoji/sort/udp/base_template 等）。
 
+## CLI 工具
 
-## CLI工具
-
-### 安装CLI
+### 安装 CLI
 
 ```bash
 go install ./cmd/subctl
@@ -241,11 +243,11 @@ go tool cover -html=coverage.out
 
 ### 贡献指南
 
-1. Fork项目
+1. Fork 项目
 2. 创建功能分支 (`git checkout -b feature/amazing-feature`)
 3. 提交更改 (`git commit -m 'Add amazing feature'`)
 4. 推送到分支 (`git push origin feature/amazing-feature`)
-5. 创建Pull Request
+5. 创建 Pull Request
 
 ## 许可证
 
@@ -253,8 +255,7 @@ MIT License - 详见 [LICENSE](LICENSE) 文件
 
 ## 致谢
 
-感谢原始SubConverter项目的贡献者和社区支持。
-
+感谢原始 SubConverter 项目的贡献者和社区支持。
 
 ### 常见错误与排查（客户端侧）
 
@@ -268,6 +269,6 @@ MIT License - 详见 [LICENSE](LICENSE) 文件
 - 时间同步：系统时间偏差会导致 TLS 失败；建议开启 NTP。
 
 快速自检命令：
+
 - `openssl s_client -connect host:443 -servername sni` 观察证书与握手。
 - `curl -vk --resolve example.com:443:ip https://example.com` 验证 SNI/证书与反代。
-

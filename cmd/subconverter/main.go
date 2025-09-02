@@ -7,10 +7,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/subconverter/subconverter-go/internal/app/converter"
-	"github.com/subconverter/subconverter-go/internal/infra/config"
-	"github.com/subconverter/subconverter-go/internal/pkg/logger"
-	"github.com/subconverter/subconverter-go/internal/server"
+	"github.com/rogeecn/subconverter-go/internal/app/converter"
+	"github.com/rogeecn/subconverter-go/internal/infra/config"
+	"github.com/rogeecn/subconverter-go/internal/pkg/logger"
+	"github.com/rogeecn/subconverter-go/internal/server"
 )
 
 func main() {
@@ -34,7 +34,7 @@ func main() {
 
 	// Start server
 	addr := cfg.Server.Host + ":" + cfg.Server.Port
-	
+
 	log.WithFields(map[string]interface{}{
 		"addr": addr,
 		"mode": cfg.Server.Mode,

@@ -5,15 +5,15 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/subconverter/subconverter-go/internal/domain/proxy"
-	"github.com/subconverter/subconverter-go/internal/domain/ruleset"
+	"github.com/rogeecn/subconverter-go/internal/domain/proxy"
+	"github.com/rogeecn/subconverter-go/internal/domain/ruleset"
 )
 
 // QuantumultGenerator generates Quantumult configuration
 type QuantumultGenerator struct{}
 
 func NewQuantumultGenerator() *QuantumultGenerator { return &QuantumultGenerator{} }
-func (g *QuantumultGenerator) Format() string { return "quantumult" }
+func (g *QuantumultGenerator) Format() string      { return "quantumult" }
 func (g *QuantumultGenerator) ContentType() string { return "text/plain" }
 func (g *QuantumultGenerator) Generate(ctx context.Context, proxies []*proxy.Proxy, rulesets []*ruleset.RuleSet, options GenerateOptions) (string, error) {
 	var builder strings.Builder
@@ -38,8 +38,8 @@ func (g *QuantumultGenerator) buildProxyLine(proxy *proxy.Proxy) string {
 // LoonGenerator generates Loon configuration
 type LoonGenerator struct{}
 
-func NewLoonGenerator() *LoonGenerator { return &LoonGenerator{} }
-func (g *LoonGenerator) Format() string { return "loon" }
+func NewLoonGenerator() *LoonGenerator       { return &LoonGenerator{} }
+func (g *LoonGenerator) Format() string      { return "loon" }
 func (g *LoonGenerator) ContentType() string { return "text/plain" }
 func (g *LoonGenerator) Generate(ctx context.Context, proxies []*proxy.Proxy, rulesets []*ruleset.RuleSet, options GenerateOptions) (string, error) {
 	var builder strings.Builder
@@ -64,8 +64,8 @@ func (g *LoonGenerator) buildProxyLine(proxy *proxy.Proxy) string {
 // V2RayGenerator generates V2Ray configuration
 type V2RayGenerator struct{}
 
-func NewV2RayGenerator() *V2RayGenerator { return &V2RayGenerator{} }
-func (g *V2RayGenerator) Format() string { return "v2ray" }
+func NewV2RayGenerator() *V2RayGenerator      { return &V2RayGenerator{} }
+func (g *V2RayGenerator) Format() string      { return "v2ray" }
 func (g *V2RayGenerator) ContentType() string { return "application/json" }
 func (g *V2RayGenerator) Generate(ctx context.Context, proxies []*proxy.Proxy, rulesets []*ruleset.RuleSet, options GenerateOptions) (string, error) {
 	result := fmt.Sprintf(`{"outbounds": [{"protocol": "freedom", "tag": "direct"}]}`)
@@ -75,8 +75,8 @@ func (g *V2RayGenerator) Generate(ctx context.Context, proxies []*proxy.Proxy, r
 // SurfboardGenerator generates Surfboard configuration
 type SurfboardGenerator struct{}
 
-func NewSurfboardGenerator() *SurfboardGenerator { return &SurfboardGenerator{} }
-func (g *SurfboardGenerator) Format() string { return "surfboard" }
+func NewSurfboardGenerator() *SurfboardGenerator  { return &SurfboardGenerator{} }
+func (g *SurfboardGenerator) Format() string      { return "surfboard" }
 func (g *SurfboardGenerator) ContentType() string { return "text/plain" }
 func (g *SurfboardGenerator) Generate(ctx context.Context, proxies []*proxy.Proxy, rulesets []*ruleset.RuleSet, options GenerateOptions) (string, error) {
 	var builder strings.Builder

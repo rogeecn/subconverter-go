@@ -1,15 +1,15 @@
 package parser
 
 import (
-    "context"
-    "encoding/base64"
-    "fmt"
-    "net/url"
-    "strconv"
-    "strings"
+	"context"
+	"encoding/base64"
+	"fmt"
+	"net/url"
+	"strconv"
+	"strings"
 
 	"github.com/google/uuid"
-	"github.com/subconverter/subconverter-go/internal/domain/proxy"
+	"github.com/rogeecn/subconverter-go/internal/domain/proxy"
 )
 
 type SSParser struct{}
@@ -33,17 +33,17 @@ func (p *SSParser) Parse(ctx context.Context, content string) ([]*proxy.Proxy, e
 
 	// Remove the ss:// prefix
 	content = strings.TrimPrefix(content, "ss://")
-	
+
 	// Try to parse as base64 first
 	if decoded, err := base64.RawURLEncoding.DecodeString(content); err == nil {
 		return p.parseLegacy(string(decoded))
 	}
-	
+
 	// Try standard base64
 	if decoded, err := base64.StdEncoding.DecodeString(content); err == nil {
 		return p.parseLegacy(string(decoded))
 	}
-	
+
 	// Try to parse as SIP002 format
 	return p.parseSIP002(content)
 }
@@ -84,25 +84,25 @@ func (p *SSParser) parseLegacy(decoded string) ([]*proxy.Proxy, error) {
 }
 
 func (p *SSParser) parseSIP002(content string) ([]*proxy.Proxy, error) {
-    u, err := url.Parse("ss://" + content)
-    if err != nil {
-        return nil, fmt.Errorf("invalid SIP002 URL: %v", err)
-    }
+	u, err := url.Parse("ss://" + content)
+	if err != nil {
+		return nil, fmt.Errorf("invalid SIP002 URL: %v", err)
+	}
 
-    // Parse user info
-    userInfo, err := url.PathUnescape(u.User.String())
-    if err != nil {
-        return nil, fmt.Errorf("invalid user info: %v", err)
-    }
-    // Support base64-encoded user info per SIP002
-    if !strings.Contains(userInfo, ":") {
-        if decoded, err := base64.RawURLEncoding.DecodeString(userInfo); err == nil {
-            userInfo = string(decoded)
-        } else if decoded, err := base64.StdEncoding.DecodeString(userInfo); err == nil {
-            userInfo = string(decoded)
-        }
-    }
-    methodPassword := strings.SplitN(userInfo, ":", 2)
+	// Parse user info
+	userInfo, err := url.PathUnescape(u.User.String())
+	if err != nil {
+		return nil, fmt.Errorf("invalid user info: %v", err)
+	}
+	// Support base64-encoded user info per SIP002
+	if !strings.Contains(userInfo, ":") {
+		if decoded, err := base64.RawURLEncoding.DecodeString(userInfo); err == nil {
+			userInfo = string(decoded)
+		} else if decoded, err := base64.StdEncoding.DecodeString(userInfo); err == nil {
+			userInfo = string(decoded)
+		}
+	}
+	methodPassword := strings.SplitN(userInfo, ":", 2)
 	if len(methodPassword) != 2 {
 		return nil, fmt.Errorf("invalid method and password format")
 	}
@@ -112,16 +112,16 @@ func (p *SSParser) parseSIP002(content string) ([]*proxy.Proxy, error) {
 		return nil, fmt.Errorf("invalid port: %v", err)
 	}
 
-    // Parse plugin info per SIP002
-    plugin := u.Query().Get("plugin")
-    pluginOpts := u.Query().Get("plugin-opts")
-    if plugin != "" && pluginOpts == "" {
-        // Split inline opts if present: plugin=obfs-local;obfs=http
-        if idx := strings.Index(plugin, ";"); idx != -1 {
-            pluginOpts = plugin[idx+1:]
-            plugin = plugin[:idx]
-        }
-    }
+	// Parse plugin info per SIP002
+	plugin := u.Query().Get("plugin")
+	pluginOpts := u.Query().Get("plugin-opts")
+	if plugin != "" && pluginOpts == "" {
+		// Split inline opts if present: plugin=obfs-local;obfs=http
+		if idx := strings.Index(plugin, ";"); idx != -1 {
+			pluginOpts = plugin[idx+1:]
+			plugin = plugin[:idx]
+		}
+	}
 
 	// Parse name
 	name := u.Fragment
@@ -130,16 +130,16 @@ func (p *SSParser) parseSIP002(content string) ([]*proxy.Proxy, error) {
 	}
 
 	result := &proxy.Proxy{
-		ID:       uuid.New().String(),
-		Type:     proxy.Type("ss"),
-		Name:     name,
-		Server:   u.Hostname(),
-		Port:     port,
-		Method:   methodPassword[0],
-		Password: methodPassword[1],
-		Plugin:   plugin,
+		ID:         uuid.New().String(),
+		Type:       proxy.Type("ss"),
+		Name:       name,
+		Server:     u.Hostname(),
+		Port:       port,
+		Method:     methodPassword[0],
+		Password:   methodPassword[1],
+		Plugin:     plugin,
 		PluginOpts: pluginOpts,
-		UDP:      true,
+		UDP:        true,
 	}
 
 	return []*proxy.Proxy{result}, nil

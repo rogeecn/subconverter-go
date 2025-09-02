@@ -1,4 +1,4 @@
-module github.com/subconverter/subconverter-go
+module github.com/rogeecn/subconverter-go
 
 go 1.25.0
 
