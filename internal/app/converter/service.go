@@ -86,7 +86,8 @@ func (s *Service) Convert(ctx context.Context, req *ConvertRequest) (*ConvertRes
 	mergedReq := *req
 	mergedReq.URLs = mergedURLs
 
-	s.logger.WithFields(map[string]interface{}{"req_urls": len(req.URLs), "extra_links": len(s.config.Subscription.ExtraLinks), "merged_urls": len(mergedURLs)}).Debug("URLs merged")
+	s.logger.WithFields(map[string]interface{}{"req_urls": len(req.URLs), "extra_links": len(s.config.Subscription.ExtraLinks), "merged_urls": len(mergedURLs)}).
+		Debug("URLs merged")
 
 	cacheKey := s.generateCacheKey(&mergedReq)
 	s.logger.WithField("cache_key", cacheKey).Debug("Cache lookup start")
@@ -124,7 +125,8 @@ func (s *Service) Convert(ctx context.Context, req *ConvertRequest) (*ConvertRes
 
 	// Generate configuration
 	genStart := time.Now()
-	s.logger.WithFields(map[string]interface{}{"target": req.Target, "proxies": len(filteredProxies)}).Info("Generating configuration")
+	s.logger.WithFields(map[string]interface{}{"target": req.Target, "proxies": len(filteredProxies)}).
+		Info("Generating configuration")
 	config, err := s.generatorManager.Generate(ctx, req.Target, filteredProxies, nil, generator.GenerateOptions{
 		ProxyGroups:  s.buildProxyGroups(req.Options),
 		Rules:        req.Options.Rules,
@@ -137,7 +139,8 @@ func (s *Service) Convert(ctx context.Context, req *ConvertRequest) (*ConvertRes
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to generate configuration")
 	}
-	s.logger.WithFields(map[string]interface{}{"bytes": len(config), "duration": time.Since(genStart)}).Info("Configuration generated")
+	s.logger.WithFields(map[string]interface{}{"bytes": len(config), "duration": time.Since(genStart)}).
+		Info("Configuration generated")
 
 	// Build response
 	resp := &ConvertResponse{
@@ -150,7 +153,8 @@ func (s *Service) Convert(ctx context.Context, req *ConvertRequest) (*ConvertRes
 	// Cache the response
 	if cacheData, err := json.Marshal(resp); err == nil {
 		s.cache.Set(ctx, cacheKey, cacheData, time.Duration(s.config.Cache.TTL)*time.Second)
-		s.logger.WithFields(map[string]interface{}{"cache_key": cacheKey, "ttl_sec": s.config.Cache.TTL}).Debug("Cached conversion result")
+		s.logger.WithFields(map[string]interface{}{"cache_key": cacheKey, "ttl_sec": s.config.Cache.TTL}).
+			Debug("Cached conversion result")
 	}
 
 	return resp, nil
@@ -291,7 +295,8 @@ func (s *Service) fetchSubscriptions(ctx context.Context, urls []string) ([]*pro
 				return
 			}
 
-			s.logger.WithFields(map[string]interface{}{"source": u, "proxies": len(proxies)}).Debug("Parsed proxies from source")
+			s.logger.WithFields(map[string]interface{}{"source": u, "proxies": len(proxies)}).
+				Debug("Parsed proxies from source")
 			results <- result{proxies: proxies}
 		}(url)
 	}

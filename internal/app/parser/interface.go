@@ -1,11 +1,12 @@
 package parser
 
 import (
-	"context"
-	"encoding/base64"
-	"strings"
+    "context"
+    "encoding/base64"
+    "strings"
 
-	"github.com/rogeecn/subconverter-go/internal/domain/proxy"
+    "github.com/rogeecn/subconverter-go/internal/domain/proxy"
+    "gopkg.in/yaml.v3"
 )
 
 // Parser defines the interface for parsing different proxy protocols
@@ -45,13 +46,23 @@ func NewManager() *Manager {
 
 // Parse parses subscription content using appropriate parser
 func (m *Manager) Parse(ctx context.Context, content string) ([]*proxy.Proxy, error) {
-	var allProxies []*proxy.Proxy
+    var allProxies []*proxy.Proxy
 
-	// Preprocess: try to decode whole content if it looks like Base64 subscription
-	preprocessed := preprocessContent(content)
+    // Preprocess: try to decode whole content if it looks like Base64 subscription
+    preprocessed := preprocessContent(content)
 
-	// Split content by lines and parse each line
-	lines := splitContent(preprocessed)
+    // Special-case: Clash YAML subscription (multi-line document)
+    // Detect quickly to avoid invoking line-based parsers on entire blob
+    if looksLikeClashYAML(preprocessed) {
+        if proxies, ok := parseClashYAML(preprocessed); ok && len(proxies) > 0 {
+            allProxies = append(allProxies, proxies...)
+            return allProxies, nil
+        }
+        // if detection said it looks like clash but parse failed, fall back to line parsing
+    }
+
+    // Split content by lines and parse each line
+    lines := splitContent(preprocessed)
 
 	for _, line := range lines {
 		line = cleanLine(line)
@@ -149,8 +160,115 @@ func preprocessContent(content string) string {
 }
 
 func looksLikeSubscription(s string) bool {
-	return strings.Contains(s, "ss://") || strings.Contains(s, "ssr://") ||
-		strings.Contains(s, "vmess://") || strings.Contains(s, "vless://") ||
-		strings.Contains(s, "trojan://") || strings.Contains(s, "hysteria://") ||
-		strings.Contains(s, "hysteria2://") || strings.Contains(s, "snell://")
+    return strings.Contains(s, "ss://") || strings.Contains(s, "ssr://") ||
+        strings.Contains(s, "vmess://") || strings.Contains(s, "vless://") ||
+        strings.Contains(s, "trojan://") || strings.Contains(s, "hysteria://") ||
+        strings.Contains(s, "hysteria2://") || strings.Contains(s, "snell://")
+}
+
+// looksLikeClashYAML performs a lightweight detection for Clash YAML docs.
+func looksLikeClashYAML(s string) bool {
+    if !strings.Contains(s, "proxies:") {
+        return false
+    }
+    // Basic YAML shape check: contains ':' lines and likely multi-line content
+    if !strings.Contains(s, ":") || !strings.Contains(s, "\n") {
+        return false
+    }
+    return true
+}
+
+// parseClashYAML parses a Clash-style YAML and extracts proxies.
+func parseClashYAML(s string) ([]*proxy.Proxy, bool) {
+    type wsOpts struct {
+        Path    string            `yaml:"path"`
+        Headers map[string]string `yaml:"headers"`
+    }
+    type clashProxy struct {
+        Name           string   `yaml:"name"`
+        Type           string   `yaml:"type"`
+        Server         string   `yaml:"server"`
+        Port           int      `yaml:"port"`
+        UUID           string   `yaml:"uuid"`
+        AlterID        int      `yaml:"alterId"`
+        Cipher         string   `yaml:"cipher"`
+        TLS            bool     `yaml:"tls"`
+        ServerName     string   `yaml:"servername"`
+        SNI            string   `yaml:"sni"`
+        Network        string   `yaml:"network"`
+        UDP            bool     `yaml:"udp"`
+        SkipCertVerify bool     `yaml:"skip-cert-verify"`
+        Username       string   `yaml:"username"`
+        Password       string   `yaml:"password"`
+        Alpn           []string `yaml:"alpn"`
+        WSOpts         *wsOpts  `yaml:"ws-opts"`
+        // hysteria/hysteria2/snell minimal fields we might ignore for now
+    }
+    var data struct {
+        Proxies []clashProxy `yaml:"proxies"`
+    }
+    if err := yaml.Unmarshal([]byte(s), &data); err != nil {
+        return nil, false
+    }
+    if len(data.Proxies) == 0 {
+        return nil, false
+    }
+
+    res := make([]*proxy.Proxy, 0, len(data.Proxies))
+    for _, cp := range data.Proxies {
+        p := &proxy.Proxy{
+            Type:           proxy.Type(cp.Type),
+            Name:           cp.Name,
+            Server:         cp.Server,
+            Port:           cp.Port,
+            UUID:           cp.UUID,
+            AID:            cp.AlterID,
+            Method:         cp.Cipher,
+            UDP:            cp.UDP,
+            SkipCertVerify: cp.SkipCertVerify,
+            Username:       cp.Username,
+            Password:       cp.Password,
+            Alpn:           cp.Alpn,
+        }
+        // TLS mapping
+        if cp.TLS {
+            p.TLS = proxy.TLSRequire
+        }
+        // SNI / servername
+        if cp.ServerName != "" {
+            p.SNI = cp.ServerName
+        } else if cp.SNI != "" {
+            p.SNI = cp.SNI
+        }
+        // Network
+        switch strings.ToLower(cp.Network) {
+        case "tcp":
+            p.Network = proxy.NetworkTCP
+        case "udp":
+            p.Network = proxy.NetworkUDP
+        case "tcp,udp":
+            p.Network = proxy.NetworkTCPUDP
+        case "ws":
+            p.Network = proxy.NetworkTCP // Clash uses ws atop TCP; keep TCP here
+        }
+        // WS opts
+        if cp.WSOpts != nil {
+            p.Path = cp.WSOpts.Path
+            if host, ok := cp.WSOpts.Headers["Host"]; ok {
+                p.Host = host
+            }
+            if p.Host == "" && len(cp.WSOpts.Headers) > 0 {
+                // pick any header key case-insensitively
+                for k, v := range cp.WSOpts.Headers {
+                    if strings.EqualFold(k, "host") {
+                        p.Host = v
+                        break
+                    }
+                }
+            }
+        }
+
+        res = append(res, p)
+    }
+    return res, true
 }
