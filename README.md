@@ -113,6 +113,44 @@ subscription:
 http://localhost:8080/api/v1/convert?target=clash
 ```
 
+### 应用 base 规则（rules_dir 下的规则文件）
+
+支持像 tindy2013/subconverter 一样，将仓库 `base/rules` 下的规则文件应用到生成的配置中。
+
+- 配置文件方式（默认规则，所有请求生效）：
+
+```yaml
+generator:
+  rules_dir: ./base/rules
+  rule_files:
+    - path: DivineEngine/Surge/Ruleset/Unbreak.list
+      policy: DIRECT
+    - path: ACL4SSR/Clash/ProxyMedia.list
+      policy: "🚀 节点选择"
+```
+
+- 请求参数方式（按请求动态指定）：
+
+POST /api/v1/convert 示例：
+
+```json
+{
+  "target": "clash",
+  "urls": ["https://example.com/sub"],
+  "options": {
+    "rule_files": [
+      {"path": "DivineEngine/Surge/Ruleset/Unbreak.list", "policy": "DIRECT"},
+      {"path": "ACL4SSR/Clash/ProxyMedia.list", "policy": "🚀 节点选择"}
+    ]
+  }
+}
+```
+
+说明：
+- 规则文件路径为相对 `generator.rules_dir` 的相对路径。
+- 每行规则若已含策略（逗号≥2），则保持原样；否则会追加 `,policy`（未提供 `policy` 时默认 `,DIRECT`）。
+- 配置中的 `generator.rule_files` 与请求中的 `options.rule_files` 会合并应用（配置在前，请求在后）。
+
 ### 快速验证（仅用 extra_links）
 
 1. 在 `configs/config.yaml` 配置 `subscription.extra_links`（可混合 ss://、trojan://、https://）。
