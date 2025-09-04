@@ -127,10 +127,23 @@ func (s *Service) Convert(ctx context.Context, req *ConvertRequest) (*ConvertRes
 	genStart := time.Now()
 	s.logger.WithFields(map[string]interface{}{"target": req.Target, "proxies": len(filteredProxies)}).
 		Info("Generating configuration")
-    // Expand rules from base rule files if specified
+    // Expand rules from base rule files (from config + request)
     mergedRules := append([]string{}, req.Options.Rules...)
+    // Build combined list: config default rule files first, then request overrides
+    type rfDef struct{ Path, Policy string }
+    var ruleFileDefs []rfDef
+    if len(s.config.Generator.RuleFiles) > 0 {
+        for _, cf := range s.config.Generator.RuleFiles {
+            ruleFileDefs = append(ruleFileDefs, rfDef{Path: cf.Path, Policy: cf.Policy})
+        }
+    }
     if len(req.Options.RuleFiles) > 0 {
         for _, rf := range req.Options.RuleFiles {
+            ruleFileDefs = append(ruleFileDefs, rfDef{Path: rf.Path, Policy: rf.Policy})
+        }
+    }
+    if len(ruleFileDefs) > 0 {
+        for _, rf := range ruleFileDefs {
             lines, err := s.templateManager.LoadRule(ctx, rf.Path)
             if err != nil {
                 s.logger.WithFields(map[string]interface{}{"rule_file": rf.Path, "error": err.Error()}).Warn("Failed to load rule file")

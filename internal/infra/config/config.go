@@ -53,8 +53,16 @@ type ParserConfig struct {
 }
 
 type GeneratorConfig struct {
-	TemplatesDir string `yaml:"templates_dir"`
-	RulesDir     string `yaml:"rules_dir"`
+    TemplatesDir string `yaml:"templates_dir"`
+    RulesDir     string `yaml:"rules_dir"`
+    // RuleFiles defines default rule files (under rules_dir) to apply with a policy
+    RuleFiles    []RuleFileConfig `yaml:"rule_files"`
+}
+
+// RuleFileConfig describes a rule file relative to rules_dir and the policy to attach
+type RuleFileConfig struct {
+    Path   string `yaml:"path"`
+    Policy string `yaml:"policy"`
 }
 
 type SubscriptionConfig struct {
@@ -85,8 +93,9 @@ func Load() *Config {
 	viper.SetDefault("security.cors.origins", []string{"*"})
 	viper.SetDefault("parser.timeout", 30)
 	viper.SetDefault("parser.max_size", 10485760)
-	viper.SetDefault("generator.templates_dir", "./base/base")
-	viper.SetDefault("generator.rules_dir", "./base/rules")
+    viper.SetDefault("generator.templates_dir", "./base/base")
+    viper.SetDefault("generator.rules_dir", "./base/rules")
+    viper.SetDefault("generator.rule_files", []map[string]string{})
 	viper.SetDefault("subscription.extra_links", []string{})
 
 	viper.AutomaticEnv()
