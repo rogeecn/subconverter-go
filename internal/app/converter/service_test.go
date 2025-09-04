@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/rogeecn/fabfile"
+	"github.com/rogeecn/subconverter-go/internal/app/generator"
 	"github.com/rogeecn/subconverter-go/internal/infra/config"
 	"github.com/rogeecn/subconverter-go/internal/pkg/logger"
 	. "github.com/smartystreets/goconvey/convey"
@@ -150,6 +151,78 @@ func TestService_Convert_SubLinks(t *testing.T) {
 			assertV2RaySubscription(t, resp)
 		})
 	})
+}
+
+func TestService_Convert_RenameAndEmojiRules(t *testing.T) {
+    // Two direct links with names to be transformed
+    // SIP002: ss://BASE64(method:password)@host:port#name
+    ss := "ss://YWVzLTI1Ni1nY206dGVzdA==@127.0.0.1:8388#US-01"
+    trojan := "trojan://pass@us.example.com:443?security=tls#US-02"
+
+    cfg := &config.Config{Cache: config.CacheConfig{TTL: 300}}
+    log := logger.New(logger.Config{Level: "debug", Format: "text", Output: "stdout"})
+
+    svc := NewService(cfg, log)
+    svc.RegisterGenerators()
+
+    req := &ConvertRequest{
+        Target: "clash",
+        URLs:   []string{ss, trojan},
+        Options: Options{
+            RenameRules: []generator.RenameRule{
+                {Match: "US-", Replace: "美国-"},
+            },
+            EmojiRules: []generator.EmojiRule{
+                {Match: "美国", Emoji: "🇺🇸"},
+            },
+            Sort: false,
+        },
+    }
+
+    resp, err := svc.Convert(context.Background(), req)
+    if err != nil {
+        t.Fatalf("convert error: %v", err)
+    }
+
+    // Expect transformed names
+    expected := map[string]bool{
+        "🇺🇸 美国-01": false,
+        "🇺🇸 美国-02": false,
+    }
+    for _, p := range resp.Proxies {
+        if _, ok := expected[p.Name]; ok {
+            expected[p.Name] = true
+        }
+        // ensure no original pattern remains
+        if strings.Contains(p.Name, "US-") {
+            t.Fatalf("proxy name was not renamed: %s", p.Name)
+        }
+    }
+    for name, ok := range expected {
+        if !ok {
+            t.Fatalf("expected renamed proxy not found: %s", name)
+        }
+    }
+
+    // Ensure Clash YAML contains the renamed/emojified names
+    var m map[string]interface{}
+    if err := yaml.Unmarshal([]byte(resp.Config), &m); err != nil {
+        t.Fatalf("invalid clash yaml: %v", err)
+    }
+    arr, _ := m["proxies"].([]interface{})
+    have := map[string]bool{}
+    for _, it := range arr {
+        if mp, ok := it.(map[string]interface{}); ok {
+            if n, ok2 := mp["name"].(string); ok2 {
+                have[n] = true
+            }
+        }
+    }
+    for name := range expected {
+        if !have[name] {
+            t.Fatalf("clash yaml does not include proxy name: %s", name)
+        }
+    }
 }
 
 // assertClashConfig validates that resp.Config is valid Clash YAML with expected structure
