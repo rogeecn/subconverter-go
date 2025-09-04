@@ -16,16 +16,23 @@ type ConvertRequest struct {
 
 // Options contains conversion options
 type Options struct {
-	IncludeRemarks []string               `json:"include_remarks,omitempty"`
-	ExcludeRemarks []string               `json:"exclude_remarks,omitempty"`
-	RenameRules    []generator.RenameRule `json:"rename_rules,omitempty"`
-	EmojiRules     []generator.EmojiRule  `json:"emoji_rules,omitempty"`
-	Sort           bool                   `json:"sort,omitempty"`
-	UDP            bool                   `json:"udp,omitempty"`
-	ProxyGroups    []generator.ProxyGroup `json:"proxy_groups,omitempty"`
-	Rules          []string               `json:"rules,omitempty"`
-	BaseTemplate   string                 `json:"base_template,omitempty"`
-	CustomOptions  map[string]interface{} `json:"custom_options,omitempty"`
+    IncludeRemarks []string               `json:"include_remarks,omitempty"`
+    ExcludeRemarks []string               `json:"exclude_remarks,omitempty"`
+    RenameRules    []generator.RenameRule `json:"rename_rules,omitempty"`
+    EmojiRules     []generator.EmojiRule  `json:"emoji_rules,omitempty"`
+    Sort           bool                   `json:"sort,omitempty"`
+    UDP            bool                   `json:"udp,omitempty"`
+    ProxyGroups    []generator.ProxyGroup `json:"proxy_groups,omitempty"`
+    Rules          []string               `json:"rules,omitempty"`
+    BaseTemplate   string                 `json:"base_template,omitempty"`
+    CustomOptions  map[string]interface{} `json:"custom_options,omitempty"`
+    RuleFiles      []RuleFileRef          `json:"rule_files,omitempty"`
+}
+
+// RuleFileRef references a rule file under the configured rules_dir and the policy to attach.
+type RuleFileRef struct {
+    Path   string `json:"path"`
+    Policy string `json:"policy"`
 }
 
 // ConvertResponse represents a conversion response

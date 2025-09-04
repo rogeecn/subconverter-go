@@ -127,15 +127,36 @@ func (s *Service) Convert(ctx context.Context, req *ConvertRequest) (*ConvertRes
 	genStart := time.Now()
 	s.logger.WithFields(map[string]interface{}{"target": req.Target, "proxies": len(filteredProxies)}).
 		Info("Generating configuration")
-	config, err := s.generatorManager.Generate(ctx, req.Target, filteredProxies, nil, generator.GenerateOptions{
-		ProxyGroups:  s.buildProxyGroups(req.Options),
-		Rules:        req.Options.Rules,
-		SortProxies:  req.Options.Sort,
-		UDPEnabled:   req.Options.UDP,
-		RenameRules:  req.Options.RenameRules,
-		EmojiRules:   req.Options.EmojiRules,
-		BaseTemplate: req.Options.BaseTemplate,
-	})
+    // Expand rules from base rule files if specified
+    mergedRules := append([]string{}, req.Options.Rules...)
+    if len(req.Options.RuleFiles) > 0 {
+        for _, rf := range req.Options.RuleFiles {
+            lines, err := s.templateManager.LoadRule(ctx, rf.Path)
+            if err != nil {
+                s.logger.WithFields(map[string]interface{}{"rule_file": rf.Path, "error": err.Error()}).Warn("Failed to load rule file")
+                continue
+            }
+            for _, line := range lines {
+                if strings.Count(line, ",") >= 2 {
+                    mergedRules = append(mergedRules, line)
+                } else if rf.Policy != "" {
+                    mergedRules = append(mergedRules, line+","+rf.Policy)
+                } else {
+                    mergedRules = append(mergedRules, line+",DIRECT")
+                }
+            }
+        }
+    }
+
+    config, err := s.generatorManager.Generate(ctx, req.Target, filteredProxies, nil, generator.GenerateOptions{
+        ProxyGroups:  s.buildProxyGroups(req.Options),
+        Rules:        mergedRules,
+        SortProxies:  req.Options.Sort,
+        UDPEnabled:   req.Options.UDP,
+        RenameRules:  req.Options.RenameRules,
+        EmojiRules:   req.Options.EmojiRules,
+        BaseTemplate: req.Options.BaseTemplate,
+    })
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to generate configuration")
 	}
