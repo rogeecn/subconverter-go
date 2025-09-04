@@ -52,42 +52,37 @@ docker run -p 8080:8080 subconverter-go
 
 ## API 使用
 
-### 转换订阅
+仅保留两个 HTTP 路由：
+- GET `/`：执行订阅转换（通过查询参数）
+- GET `/health`：健康检查
 
-```bash
-curl -X POST http://localhost:8080/api/v1/convert \
-  -H "Content-Type: application/json" \
-  -d '{
-    "target": "clash",
-    "urls": ["https://example.com/subscription"],
-    "config": "https://example.com/config.yaml",
-    "options": {
-      "include_remarks": ["香港", "日本"],
-      "exclude_remarks": ["测试"],
-      "rename_rules": ["香港->HK", "日本->JP"],
-      "sort": true,
-      "udp": true
-    }
-  }'
-```
-
-### 直接订阅（GET，用于 Clash 等客户端）
+### 转换订阅（GET，用于 Clash 等客户端）
 
 客户端可直接填写合并订阅地址，无需手动下载配置：
 
-```bash
+```text
 # 合并多个订阅为 Clash（target 默认 clash）
-http://localhost:8080/api/v1/convert?url=https://a.example/sub&url=https://b.example/sub&sort=1&udp=1
+http://localhost:8080/?url=https://a.example/sub&url=https://b.example/sub&sort=1&udp=1
 
 # 也可使用逗号分隔：
-http://localhost:8080/api/v1/convert?urls=https://a.example/sub,https://b.example/sub
+http://localhost:8080/?urls=https://a.example/sub,https://b.example/sub
 
 # 过滤与重命名：
-http://localhost:8080/api/v1/convert?url=https://a/sub&include=HK&include=JP&rename=香港->HK&rename=日本->JP
-
-# 简写别名（等价 /api/v1/convert）
-http://localhost:8080/sub?url=https://a/sub&url=https://b/sub
+http://localhost:8080/?url=https://a/sub&include=HK&include=JP&rename=香港->HK&rename=日本->JP
 ```
+
+支持的查询参数（常用）：
+- `target`: 输出格式（`clash`/`surge`/`quantumult`/`loon`/`v2ray`/`surfboard`），默认 `clash`
+- `url`: 订阅/节点链接（可重复）
+- `urls`: 逗号分隔的链接
+- `include`/`include_remarks`: 包含关键字（可重复 / 逗号分隔）
+- `exclude`/`exclude_remarks`: 排除关键字（可重复 / 逗号分隔）
+- `rename`: 重命名规则，形如 `旧->新`（可重复）
+- `emoji`: 名称加表情，形如 `匹配:😊`（可重复）
+- `sort`: `1/true` 开启排序
+- `udp`: `1/true` 开启 UDP
+- `rule`/`rules`: 追加自定义规则行（可重复 / 逗号分隔）
+- `base_template`/`base`: 指定基础模板名称
 
 ### 配置额外独立节点（与订阅合并）
 
@@ -110,7 +105,7 @@ subscription:
 客户端可直接使用（未传 url 也可）：
 
 ```
-http://localhost:8080/api/v1/convert?target=clash
+http://localhost:8080/?target=clash
 ```
 
 ### 应用 base 规则（rules_dir 下的规则文件）
@@ -131,43 +126,27 @@ generator:
 
 - 请求参数方式（按请求动态指定）：
 
-POST /api/v1/convert 示例：
-
-```json
-{
-  "target": "clash",
-  "urls": ["https://example.com/sub"],
-  "options": {
-    "rule_files": [
-      {"path": "DivineEngine/Surge/Ruleset/Unbreak.list", "policy": "DIRECT"},
-      {"path": "ACL4SSR/Clash/ProxyMedia.list", "policy": "🚀 节点选择"}
-    ]
-  }
-}
-```
-
 说明：
 - 规则文件路径为相对 `generator.rules_dir` 的相对路径。
 - 每行规则若已含策略（逗号≥2），则保持原样；否则会追加 `,policy`（未提供 `policy` 时默认 `,DIRECT`）。
-- 配置中的 `generator.rule_files` 与请求中的 `options.rule_files` 会合并应用（配置在前，请求在后）。
+- 仅支持配置方式（`generator.rule_files`）。GET 路由不再支持按请求动态指定规则文件；如需临时追加少量规则，可使用 `rule`/`rules` 查询参数直接追加规则行。
 
 ### 快速验证（仅用 extra_links）
 
 1. 在 `configs/config.yaml` 配置 `subscription.extra_links`（可混合 ss://、trojan://、https://）。
 2. 启动服务：`./subconverter --config configs/config.yaml`（或 Docker 方式）。
 3. 访问（不传 url，默认 target=clash 也可显式指定）：
-   - `http://localhost:8080/api/v1/convert?target=clash`
-   - 或别名：`http://localhost:8080/sub?target=clash`
+   - `http://localhost:8080/?target=clash`
 4. 返回应为 YAML。命令行验证：
-   - `curl -I "http://localhost:8080/api/v1/convert?target=clash" | grep Content-Type`
-   - `curl -s "http://localhost:8080/api/v1/convert?target=clash" | head -n 20`
+   - `curl -I "http://localhost:8080/?target=clash" | grep Content-Type`
+   - `curl -s "http://localhost:8080/?target=clash" | head -n 20`
 5. 合并使用（将请求 url 与 extra_links 一并合并）：
-   - `http://localhost:8080/api/v1/convert?target=clash&url=https://example.com/sub`
+   - `http://localhost:8080/?target=clash&url=https://example.com/sub`
 
 ### 健康检查
 
 ```bash
-curl http://localhost:8080/api/v1/health
+curl http://localhost:8080/health
 ```
 
 ### 客户端示例（Clash / Surge / Quantumult X / Loon）
